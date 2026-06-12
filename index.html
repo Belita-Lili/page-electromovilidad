@@ -2,459 +2,2186 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asesor de Vehículos Eléctricos</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Voltia | Plataforma de Electromovilidad</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         :root {
-            --rosa-claro: #ffebee;
-            --rosa-palido: #fce4ec;
-            --rosa-primario: #f8bbd0;
-            --rosa-secundario: #f48fb1;
-            --rosa-acento: #ff80ab;
+            --guinda-950: #1a060c;
+            --guinda-900: #2b0a14;
+            --guinda-800: #3d0f1e;
+            --guinda-700: #5c1428;
+            --guinda-600: #7a1a35;
+            --guinda-accent: #c2185b;
+            --ember: #ff7a45;
+            --gold: #e8b95f;
+            --mint: #6fd8b8;
+            --text-hi: #f7e9ec;
+            --text-lo: #b89aa3;
+            --line: rgba(232, 185, 95, 0.12);
+            --display: 'Fraunces', serif;
+            --body: 'Manrope', sans-serif;
+            --mono: 'JetBrains Mono', monospace;
         }
-        
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--rosa-palido);
-            color: #333;
-            line-height: 1.6;
+            font-family: var(--body);
+            background: var(--guinda-950);
+            background-image:
+                radial-gradient(circle at 85% -10%, rgba(194, 24, 91, 0.25), transparent 45%),
+                radial-gradient(circle at 10% 110%, rgba(232, 185, 95, 0.08), transparent 50%);
+            color: var(--text-hi);
+            min-height: 100vh;
         }
 
-        header {
-            background-color: var(--rosa-secundario);
-            color: white;
-            padding: 20px 0;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        /* ===== Layout ===== */
+        .app { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 264px;
+            flex-shrink: 0;
+            background: linear-gradient(180deg, var(--guinda-900), var(--guinda-950));
+            border-right: 1px solid var(--line);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            padding: 1.75rem 1.25rem;
         }
 
-        nav ul {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        nav ul li {
-            margin: 0 15px;
-        }
-
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
-        nav ul li a:hover {
-            background-color: var(--rosa-acento);
-        }
-
-        section {
-            padding: 25px;
-            margin: 20px auto;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            max-width: 1000px;
-        }
-
-        h1, h2, h3 {
-            color: #d81b60;
-        }
-
-        #map {
-            height: 500px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border: 1px solid var(--rosa-primario);
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #555;
-        }
-
-        input, select, textarea, button {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--rosa-primario);
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-
-        button {
-            background-color: var(--rosa-secundario);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: var(--rosa-acento);
-        }
-
-        .result-card {
-            background-color: var(--rosa-claro);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border-left: 4px solid var(--rosa-acento);
-        }
-
-        .car-features {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .feature-card {
-            flex: 1 1 300px;
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-top: 3px solid var(--rosa-primario);
-        }
-
-        .eco-impact {
+        .brand {
             display: flex;
             align-items: center;
-            margin-top: 15px;
+            gap: 0.65rem;
+            margin-bottom: 2.25rem;
         }
 
-        .eco-icon {
-            font-size: 24px;
-            margin-right: 10px;
-            color: #4CAF50;
+        .brand-mark {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--guinda-accent), var(--ember));
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--display);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--guinda-950);
+            flex-shrink: 0;
         }
 
-        footer {
+        .brand-text h1 {
+            font-family: var(--display);
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+        .brand-text span {
+            font-size: 0.68rem;
+            color: var(--text-lo);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .nav-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-lo);
+            margin: 1.5rem 0 0.6rem 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 0.85rem;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--text-lo);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            position: relative;
+            margin-bottom: 0.15rem;
+        }
+        .nav-item i { width: 18px; text-align: center; font-size: 0.95rem; }
+
+        .nav-item:hover { color: var(--text-hi); background: rgba(255,255,255,0.03); }
+
+        .nav-item.active {
+            color: var(--gold);
+            background: linear-gradient(90deg, rgba(232,185,95,0.12), transparent);
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute; left: -1.25rem; top: 50%; transform: translateY(-50%);
+            width: 3px; height: 60%;
+            background: var(--gold);
+            border-radius: 2px;
+        }
+
+        .sidebar-foot {
+            margin-top: 2.5rem;
+            padding: 1rem;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.02);
+        }
+        .sidebar-foot .label { font-size: 0.65rem; color: var(--text-lo); text-transform: uppercase; letter-spacing: 0.1em; }
+        .sidebar-foot .value { font-family: var(--mono); font-size: 1.4rem; color: var(--mint); margin-top: 0.2rem; }
+
+        .main {
+            flex: 1;
+            margin-left: 264px;
+            padding: 2rem 2.25rem 3rem;
+            max-width: 1400px;
+        }
+
+        .page-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .page-head .eyebrow {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--ember);
+            margin-bottom: 0.4rem;
+        }
+        .page-head h2 {
+            font-family: var(--display);
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        .page-head p { color: var(--text-lo); font-size: 0.9rem; margin-top: 0.3rem; max-width: 520px; }
+
+        .timestamp {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--text-lo);
+            text-align: right;
+        }
+        .timestamp .live-dot {
+            display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+            background: var(--mint); margin-right: 0.4rem;
+            box-shadow: 0 0 0 0 rgba(111,216,184,0.6);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(111,216,184,0.5); }
+            70% { box-shadow: 0 0 0 7px rgba(111,216,184,0); }
+            100% { box-shadow: 0 0 0 0 rgba(111,216,184,0); }
+        }
+
+        /* ===== Cards / Grid ===== */
+        .grid { display: grid; gap: 1.1rem; }
+        .grid-kpi { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-bottom: 1.5rem; }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); margin-bottom: 1.5rem; }
+        .grid-metrics { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 1.1rem; }
+
+        .card {
+            background: linear-gradient(160deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01));
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 1.4rem;
+        }
+
+        .kpi {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi::after {
+            content: '';
+            position: absolute; right: -30px; top: -30px;
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: var(--kpi-glow, var(--guinda-accent));
+            opacity: 0.18;
+            filter: blur(10px);
+        }
+        .kpi .icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.04);
+            color: var(--kpi-color, var(--gold));
+            font-size: 1rem;
+        }
+        .kpi .kpi-value { font-family: var(--display); font-size: 1.9rem; font-weight: 600; line-height: 1.1; }
+        .kpi .kpi-label { font-size: 0.78rem; color: var(--text-lo); }
+        .kpi .kpi-delta { font-family: var(--mono); font-size: 0.75rem; }
+        .delta-up { color: var(--mint); }
+        .delta-down { color: var(--ember); }
+
+        .card-head {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem; padding-bottom: 0.85rem;
+            border-bottom: 1px solid var(--line);
+        }
+        .card-head h3 {
+            font-family: var(--display);
+            font-weight: 600;
+            font-size: 1.05rem;
+            display: flex; align-items: center; gap: 0.55rem;
+        }
+        .card-head h3 i { color: var(--gold); font-size: 0.95rem; }
+        .card-head .tag {
+            font-family: var(--mono); font-size: 0.68rem;
+            color: var(--text-lo); text-transform: uppercase; letter-spacing: 0.1em;
+            border: 1px solid var(--line); padding: 0.2rem 0.6rem; border-radius: 20px;
+        }
+
+        /* ===== Buttons / Inputs ===== */
+        button.btn {
+            background: linear-gradient(135deg, var(--guinda-accent), var(--ember));
+            color: var(--guinda-950);
+            border: none;
+            padding: 0.65rem 1.3rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: var(--body);
+        }
+        button.btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(194,24,91,0.35); }
+
+        button.btn-ghost {
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--text-hi);
+            padding: 0.65rem 1.3rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--body);
+        }
+        button.btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+        select {
+            background: var(--guinda-900);
+            color: var(--text-hi);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 0.6rem 1rem;
+            font-family: var(--body);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .control-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            align-items: end;
+        }
+        .control-item label {
+            display: flex; justify-content: space-between;
+            font-size: 0.82rem; color: var(--text-lo); margin-bottom: 0.5rem;
+        }
+        .control-item label .val { font-family: var(--mono); color: var(--gold); }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--guinda-700);
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--gold);
+            border: 2px solid var(--guinda-950);
+            cursor: pointer;
+            box-shadow: 0 0 0 4px rgba(232,185,95,0.15);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--gold);
+            border: 2px solid var(--guinda-950);
+            cursor: pointer;
+        }
+
+        /* ===== Vehicle Twin ===== */
+        .twin-wrap {
+            display: flex; gap: 1.75rem; flex-wrap: wrap;
+        }
+        .twin-svg { flex: 1.4; min-width: 320px; }
+        .twin-info { flex: 1; min-width: 260px; }
+
+        .vehicle-component { cursor: pointer; transition: filter 0.25s, opacity 0.25s; }
+        .vehicle-component:hover { filter: drop-shadow(0 0 12px var(--gold)); }
+
+        .twin-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 1rem; }
+        .twin-stat {
+            background: rgba(0,0,0,0.18);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 0.75rem;
             text-align: center;
-            padding: 20px;
-            background-color: var(--rosa-secundario);
-            color: white;
-            margin-top: 30px;
+        }
+        .twin-stat .stat-label { font-size: 0.7rem; color: var(--text-lo); text-transform: uppercase; letter-spacing: 0.08em; }
+        .twin-stat .stat-value { font-family: var(--mono); font-size: 1.25rem; color: var(--mint); margin-top: 0.2rem; }
+
+        /* ===== Gauges / progress ===== */
+        .bar-track {
+            background: rgba(0,0,0,0.25);
+            border-radius: 20px;
+            height: 30px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            position: relative;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: flex-end;
+            padding-right: 0.8rem;
+            font-family: var(--mono); font-size: 0.78rem; font-weight: 600;
+            color: var(--guinda-950);
+            transition: width 0.6s ease;
+            white-space: nowrap;
         }
 
-        @media (max-width: 768px) {
-            section {
-                padding: 15px;
-                margin: 15px 10px;
-            }
-            
-            nav ul {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            nav ul li {
-                margin: 5px 0;
-            }
+        /* ===== Energy Flow ===== */
+        .flow-row {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 0.75rem;
         }
+        .flow-node {
+            flex: 1; min-width: 130px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1rem 0.75rem;
+            text-align: center;
+            transition: border-color 0.25s, transform 0.25s;
+        }
+        .flow-node:hover { border-color: var(--gold); transform: translateY(-3px); }
+        .flow-node .fn-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+        .flow-node .fn-label { font-size: 0.78rem; color: var(--text-lo); }
+        .flow-node .fn-value { font-family: var(--mono); font-size: 1.05rem; margin-top: 0.3rem; color: var(--text-hi); }
+        .flow-arrow { color: var(--text-lo); font-size: 1.2rem; flex-shrink: 0; }
+
+        /* ===== Map ===== */
+        #map { height: 420px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); margin-top: 1rem; }
+        .station-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.7rem 0.9rem;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.18);
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            border-left: 3px solid var(--mint);
+        }
+        .station-row.busy { border-left-color: var(--ember); }
+        .station-row .s-name { font-weight: 600; }
+        .station-row .s-meta { color: var(--text-lo); font-size: 0.78rem; font-family: var(--mono); }
+
+        /* ===== Pages ===== */
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== Formula blocks ===== */
+        .formula-box {
+            background: rgba(0,0,0,0.22);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            font-family: var(--mono);
+            font-size: 0.92rem;
+            color: var(--gold);
+            margin: 0.75rem 0;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .formula-box .unit { color: var(--text-lo); font-size: 0.78rem; margin-left: 0.5rem; }
+        .formula-note { font-size: 0.8rem; color: var(--text-lo); margin-top: 0.4rem; }
+
+        /* ===== Alert badges ===== */
+        .alert-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.7rem 0.9rem;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.18);
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            border-left: 3px solid var(--mint);
+            gap: 0.75rem;
+        }
+        .alert-row.warn { border-left-color: var(--gold); }
+        .alert-row.crit { border-left-color: var(--ember); }
+        .alert-row .a-icon { font-size: 1.05rem; flex-shrink: 0; }
+        .alert-row.ok .a-icon { color: var(--mint); }
+        .alert-row.warn .a-icon { color: var(--gold); }
+        .alert-row.crit .a-icon { color: var(--ember); }
+        .alert-row .a-body { flex: 1; }
+        .alert-row .a-title { font-weight: 600; }
+        .alert-row .a-meta { color: var(--text-lo); font-size: 0.75rem; font-family: var(--mono); }
+        .badge {
+            font-family: var(--mono); font-size: 0.68rem;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: 0.2rem 0.55rem; border-radius: 20px;
+            border: 1px solid currentColor;
+        }
+        .badge.ok { color: var(--mint); }
+        .badge.warn { color: var(--gold); }
+        .badge.crit { color: var(--ember); }
+
+        /* ===== Circuit diagram ===== */
+        .circuit-wrap { display: flex; justify-content: center; padding: 1rem 0; }
+
+        /* ===== Executive metrics ===== */
+        .exec-highlight {
+            font-family: var(--display);
+            font-size: 2.4rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+        .exec-sub { color: var(--text-lo); font-size: 0.85rem; }
+
+        /* ===== Misc ===== */
+        .legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-lo); margin-top: 0.75rem; }
+        .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+        .legend .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding: 1.25rem; }
+            .mobile-toggle { display: flex !important; }
+        }
+
+        .mobile-toggle {
+            display: none;
+            position: fixed; top: 1rem; left: 1rem; z-index: 200;
+            width: 42px; height: 42px; border-radius: 10px;
+            background: var(--guinda-700);
+            border: 1px solid var(--line);
+            color: var(--text-hi);
+            align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--guinda-700); border-radius: 4px; }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Asesor de Vehículos Eléctricos</h1>
-        <nav>
-            <ul>
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#calculadora">Calculadora</a></li>
-                <li><a href="#mapa">Estaciones de Carga</a></li>
-                <li><a href="#recomendaciones">Recomendaciones</a></li>
-                <li><a href="#contacto">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
 
-    <section id="inicio">
-        <h2>Encuentra el vehículo eléctrico perfecto para ti</h2>
-        <p>Descubre cuánto puedes ahorrar, qué modelo se adapta a tus necesidades y cómo contribuyes al medio ambiente cambiando a un vehículo eléctrico.</p>
-    </section>
+<div class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></div>
 
-    <section id="calculadora">
-        <h2>Calculadora Personalizada</h2>
-        <form id="calculator-form">
-            <div class="form-group">
-                <label for="km">Kilómetros que manejas al año:</label>
-                <input type="number" id="km" required min="1000" step="100">
+<div class="app">
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-mark">V</div>
+            <div class="brand-text">
+                <h1>Voltia</h1>
+                <span>Plataforma de Electromovilidad</span>
             </div>
-            
-            <div class="form-group">
-                <label for="current-car">Tipo de vehículo actual:</label>
-                <select id="current-car" required>
-                    <option value="">Selecciona tu vehículo</option>
-                    <option value="gasolina">Gasolina</option>
-                    <option value="diesel">Diésel</option>
-                    <option value="hibrido">Híbrido</option>
-                    <option value="electrico">Eléctrico (quiero actualizar)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="budget">Presupuesto aproximado (USD):</label>
-                <input type="number" id="budget" min="10000" step="1000">
-            </div>
-            
-            <button type="submit">Calcular recomendación</button>
-        </form>
-        
-        <div id="resultados">
-            <!-- Resultados dinámicos se insertarán aquí -->
         </div>
-    </section>
 
-    <section id="mapa">
-        <h2>Mapa de Estaciones de Carga</h2>
-        <p>Encuentra las estaciones de carga más cercanas a tu ubicación:</p>
-        <div id="map"></div>
-        <div class="form-group" style="margin-top: 15px;">
-            <label for="location-search">Buscar estaciones cerca de:</label>
-            <input type="text" id="location-search" placeholder="Ingresa una ciudad o dirección">
-            <button id="search-btn" type="button">Buscar</button>
+        <div class="nav-label">Panel</div>
+        <div class="nav-item active" data-page="overview"><i class="fas fa-gauge-high"></i> Resumen General</div>
+        <div class="nav-item" data-page="twin"><i class="fas fa-car-side"></i> Gemelo Digital</div>
+        <div class="nav-item" data-page="energy"><i class="fas fa-bolt"></i> Flujo Energético</div>
+
+        <div class="nav-label">Operación</div>
+        <div class="nav-item" data-page="map"><i class="fas fa-map-location-dot"></i> Estaciones de Carga</div>
+        <div class="nav-item" data-page="sim"><i class="fas fa-sliders"></i> Simulador de Ruta</div>
+
+        <div class="nav-label">Ingeniería</div>
+        <div class="nav-item" data-page="physics"><i class="fas fa-wind"></i> Modelo Físico</div>
+        <div class="nav-item" data-page="battery"><i class="fas fa-car-battery"></i> Batería (Thevenin)</div>
+        <div class="nav-item" data-page="quality"><i class="fas fa-wave-square"></i> Calidad de Energía</div>
+
+        <div class="nav-label">Negocio</div>
+        <div class="nav-item" data-page="executive"><i class="fas fa-chart-pie"></i> Dashboard Ejecutivo</div>
+
+        <div class="sidebar-foot">
+            <div class="label">Autonomía restante</div>
+            <div class="value" id="sideRange">412 km</div>
         </div>
-    </section>
+    </aside>
 
-    <section id="recomendaciones">
-        <h2>Recomendaciones de Vehículos</h2>
-        <div id="car-recommendations">
-            <p>Complete la calculadora para obtener recomendaciones personalizadas.</p>
-        </div>
-    </section>
+    <!-- ===== Main ===== -->
+    <main class="main">
 
-    <section id="info">
-        <h2>Beneficios Ambientales</h2>
-        <div class="eco-impact">
-            <span class="eco-icon">🌱</span>
-            <p>Un vehículo eléctrico puede reducir tus emisiones de CO2 en un 50-70% comparado con uno de gasolina, dependiendo de la fuente de energía eléctrica en tu región.</p>
-        </div>
-    </section>
-
-    <section id="contacto">
-        <h2>Contacto</h2>
-        <form id="contact-form">
-            <div class="form-group">
-                <label for="nombre">Nombre:</label>
-                <input type="text" id="nombre" required>
+        <!-- ===================== OVERVIEW ===================== -->
+        <section class="page active" id="page-overview">
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Panel General</div>
+                    <h2>Estado de la Flota</h2>
+                    <p>Visión consolidada del consumo, costos y desempeño del vehículo eléctrico en tiempo real.</p>
+                </div>
+                <div class="timestamp"><span class="live-dot"></span>Datos en vivo · <span id="clock"></span></div>
             </div>
-            
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" required>
+
+            <div class="grid grid-kpi">
+                <div class="card kpi" style="--kpi-color: var(--gold); --kpi-glow: var(--gold);">
+                    <div class="icon"><i class="fas fa-bolt"></i></div>
+                    <div class="kpi-value" id="kpiEnergy">52.5 kWh</div>
+                    <div class="kpi-label">Energía consumida hoy</div>
+                    <div class="kpi-delta delta-down"><i class="fas fa-arrow-down"></i> 3.2% vs ayer</div>
+                </div>
+                <div class="card kpi" style="--kpi-color: var(--mint); --kpi-glow: var(--mint);">
+                    <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="kpi-value" id="kpiCost">$7.88</div>
+                    <div class="kpi-label">Costo total de carga</div>
+                    <div class="kpi-delta delta-up"><i class="fas fa-arrow-down"></i> Tarifa $0.15/kWh</div>
+                </div>
+                <div class="card kpi" style="--kpi-color: var(--ember); --kpi-glow: var(--ember);">
+                    <div class="icon"><i class="fas fa-leaf"></i></div>
+                    <div class="kpi-value" id="kpiCO2">21 kg</div>
+                    <div class="kpi-label">CO₂ evitado</div>
+                    <div class="kpi-delta delta-up"><i class="fas fa-arrow-up"></i> vs equivalente ICE</div>
+                </div>
+                <div class="card kpi" style="--kpi-color: var(--guinda-accent); --kpi-glow: var(--guinda-accent);">
+                    <div class="icon"><i class="fas fa-battery-three-quarters"></i></div>
+                    <div class="kpi-value" id="kpiSOC">82%</div>
+                    <div class="kpi-label">Estado de carga (SoC)</div>
+                    <div class="kpi-delta" style="color:var(--text-lo);">64 kWh · NMC 811</div>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label for="mensaje">Mensaje:</label>
-                <textarea id="mensaje" rows="5" required></textarea>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-chart-line"></i> Consumo Energético — 24h</h3>
+                        <span class="tag">kWh</span>
+                    </div>
+                    <div id="chartConsumption"></div>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-chart-pie"></i> Distribución de Pérdidas</h3>
+                        <span class="tag">%</span>
+                    </div>
+                    <div id="chartLosses"></div>
+                </div>
             </div>
-            
-            <button type="submit">Enviar consulta</button>
-        </form>
-    </section>
 
-    <footer>
-        <p>&copy; 2023 Asesor de Vehículos Eléctricos | Contribuyendo a un futuro más sostenible</p>
-    </footer>
-
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script>
-        // Base de datos de vehículos eléctricos
-        const electricCars = [
-            {
-                name: "Nissan Leaf",
-                range: 240,
-                price: 30000,
-                efficiency: 6.5, // km/kWh
-                suitableFor: "urban",
-                features: ["Asistente de conducción", "Carga rápida", "Conectividad"]
-            },
-            {
-                name: "Tesla Model 3",
-                range: 430,
-                price: 45000,
-                efficiency: 6.2,
-                suitableFor: "long-distance",
-                features: ["Autopilot", "Pantalla táctil", "Aceleración rápida"]
-            },
-            {
-                name: "Chevrolet Bolt EV",
-                range: 380,
-                price: 35000,
-                efficiency: 6.0,
-                suitableFor: "mixed",
-                features: ["Carga rápida", "Espacioso", "Asistente de estacionamiento"]
-            },
-            {
-                name: "Hyundai Kona Electric",
-                range: 415,
-                price: 38000,
-                efficiency: 6.3,
-                suitableFor: "mixed",
-                features: ["Sistema infoentretenimiento", "Asistente de conducción", "Diseño SUV"]
-            }
-        ];
-
-        // Mapa interactivo
-        let map;
-        let markers = [];
-        
-        function initMap() {
-            map = L.map('map').setView([19.4326, -99.1332], 12); // Centro en Ciudad de México
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-            
-            // Cargar estaciones de carga (simulado)
-            loadChargingStations();
-        }
-        
-        function loadChargingStations(lat = 19.4326, lng = -99.1332) {
-            // Limpiar marcadores existentes
-            markers.forEach(marker => map.removeLayer(marker));
-            markers = [];
-            
-            // Simulación de API - en un caso real usarías una API como OpenChargeMap
-            const simulatedStations = [
-                {name: "Estación Centro", lat: 19.4326, lng: -99.1332},
-                {name: "Estación Polanco", lat: 19.4330, lng: -99.1900},
-                {name: "Estación Condesa", lat: 19.4100, lng: -99.1700},
-                {name: "Estación Santa Fe", lat: 19.3600, lng: -99.2600},
-                {name: "Estación Coyoacán", lat: 19.3500, lng: -99.1600}
-            ];
-            
-            simulatedStations.forEach(station => {
-                const marker = L.marker([station.lat, station.lng]).addTo(map)
-                    .bindPopup(`<b>${station.name}</b><br>24/7<br>Tipo: CCS/CHAdeMO`);
-                markers.push(marker);
-            });
-        }
-        
-        // Buscar ubicación
-        document.getElementById('search-btn').addEventListener('click', function() {
-            const location = document.getElementById('location-search').value;
-            if (location.includes("Ciudad de México") || location.includes("CDMX")) {
-                map.setView([19.4326, -99.1332], 13);
-                loadChargingStations();
-            } else if (location.includes("Monterrey")) {
-                map.setView([25.6866, -100.3161], 13);
-                loadChargingStations(25.6866, -100.3161);
-            } else if (location.includes("Guadalajara")) {
-                map.setView([20.6597, -103.3496], 13);
-                loadChargingStations(20.6597, -103.3496);
-            } else {
-                alert("Ubicación no reconocida. Mostrando estaciones en CDMX por defecto.");
-                map.setView([19.4326, -99.1332], 13);
-                loadChargingStations();
-            }
-        });
-
-        // Calculadora de ahorro
-        document.getElementById('calculator-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const km = parseFloat(document.getElementById('km').value);
-            const currentCarType = document.getElementById('current-car').value;
-            const budget = document.getElementById('budget').value ? parseFloat(document.getElementById('budget').value) : 50000;
-            
-            // Cálculos
-            const costos = {
-                gasolina: 0.15,  // USD por km
-                diesel: 0.12,
-                hibrido: 0.08,
-                electrico: 0.05
-            };
-            
-            const currentCost = km * costos[currentCarType];
-            const electricCost = km * costos.electrico;
-            const annualSavings = currentCost - electricCost;
-            
-            // Recomendación de vehículo
-            let recommendedCars = electricCars
-                .filter(car => car.price <= budget * 1.1) // +10% de margen
-                .sort((a, b) => {
-                    // Priorizar rango para usuarios que manejan mucho
-                    if (km > 20000) return b.range - a.range;
-                    // Priorizar precio para presupuestos ajustados
-                    if (budget < 35000) return a.price - b.price;
-                    // Balance general
-                    return (b.range/1000 + b.efficiency) - (a.range/1000 + a.efficiency);
-                });
-            
-            if (recommendedCars.length === 0) {
-                recommendedCars = electricCars.sort((a, b) => a.price - b.price).slice(0, 2);
-            } else if (recommendedCars.length > 2) {
-                recommendedCars = recommendedCars.slice(0, 2);
-            }
-            
-            // Mostrar resultados
-            const resultadosHTML = `
-                <div class="result-card">
-                    <h3>Resultados para ${km.toLocaleString()} km/año</h3>
-                    <p><strong>Ahorro anual estimado:</strong> $${annualSavings.toFixed(2)} USD</p>
-                    <p><strong>Tiempo de recuperación de inversión:</strong> ${(recommendedCars[0].price / annualSavings).toFixed(1)} años</p>
-                    
-                    <div class="eco-impact">
-                        <span class="eco-icon">🌍</span>
-                        <p>Reducción estimada de CO2: ${(km * 0.12).toFixed(0)} kg al año (equivalente a ${(km * 0.12 / 20).toFixed(1)} árboles plantados)</p>
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fas fa-microchip"></i> Indicadores de Ingeniería</h3>
+                    <span class="tag">Sistema</span>
+                </div>
+                <div class="grid grid-metrics">
+                    <div class="twin-stat">
+                        <div class="stat-label">Eficiencia Global</div>
+                        <div class="stat-value" id="mEff">94.2%</div>
+                    </div>
+                    <div class="twin-stat">
+                        <div class="stat-label">Pérdidas Joule</div>
+                        <div class="stat-value" id="mJoule">5.8%</div>
+                    </div>
+                    <div class="twin-stat">
+                        <div class="stat-label">Consumo Específico</div>
+                        <div class="stat-value" id="mSpecific">165 Wh/km</div>
+                    </div>
+                    <div class="twin-stat">
+                        <div class="stat-label">LCOE</div>
+                        <div class="stat-value" id="mLcoe">$0.12/kWh</div>
                     </div>
                 </div>
-            `;
-            
-            document.getElementById('resultados').innerHTML = resultadosHTML;
-            
-            // Mostrar recomendaciones
-            const recommendationsHTML = `
-                <h3>Vehículos recomendados para ti</h3>
-                <div class="car-features">
-                    ${recommendedCars.map(car => `
-                        <div class="feature-card">
-                            <h4>${car.name}</h4>
-                            <p><strong>Precio:</strong> $${car.price.toLocaleString()} USD</p>
-                            <p><strong>Autonomía:</strong> ${car.range} km</p>
-                            <p><strong>Eficiencia:</strong> ${car.efficiency} km/kWh</p>
-                            <p><strong>Características:</strong></p>
-                            <ul>
-                                ${car.features.map(f => `<li>${f}</li>`).join('')}
-                            </ul>
+            </div>
+            <div class="grid grid-2" style="margin-top:1.5rem;">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-bell"></i> Alertas del Sistema</h3>
+                        <span class="tag" id="alertCount">3 activas</span>
+                    </div>
+                    <div id="alertList"></div>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-clock-rotate-left"></i> Histórico Comparativo</h3>
+                        <select id="histRange" onchange="renderHistChart()" style="font-size:0.78rem; padding:0.35rem 0.7rem;">
+                            <option value="week">Última semana</option>
+                            <option value="month">Último mes</option>
+                            <option value="year">Últimos 12 meses</option>
+                        </select>
+                    </div>
+                    <div id="chartHistory"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== DIGITAL TWIN ===================== -->
+        <section class="page" id="page-twin">
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Gemelo Digital</div>
+                    <h2>Vehículo Interactivo</h2>
+                    <p>Selecciona un componente para ver sus métricas operativas en tiempo real.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="twin-wrap">
+                    <div class="twin-svg">
+                        <svg width="100%" height="320" viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="250" cy="255" rx="220" ry="14" fill="#000" opacity="0.35"/>
+                            <rect x="80" y="160" width="340" height="80" rx="16" fill="#3d0f1e" stroke="#e8b95f" stroke-width="2"/>
+                            <path d="M140 160 L180 100 L320 100 L360 160 Z" fill="#2b0a14" stroke="#e8b95f" stroke-width="2"/>
+                            <rect x="190" y="112" width="50" height="40" fill="#1a060c" opacity="0.6" rx="2"/>
+                            <rect x="260" y="112" width="50" height="40" fill="#1a060c" opacity="0.6" rx="2"/>
+                            <circle cx="150" cy="240" r="26" fill="#1a060c" stroke="#e8b95f" stroke-width="2"/>
+                            <circle cx="150" cy="240" r="10" fill="#5c1428"/>
+                            <circle cx="350" cy="240" r="26" fill="#1a060c" stroke="#e8b95f" stroke-width="2"/>
+                            <circle cx="350" cy="240" r="10" fill="#5c1428"/>
+
+                            <rect class="vehicle-component" id="comp-charger" x="118" y="178" width="52" height="44" rx="6" fill="#ff7a45" opacity="0.75"/>
+                            <rect class="vehicle-component" id="comp-battery" x="198" y="178" width="104" height="44" rx="6" fill="#6fd8b8" opacity="0.75"/>
+                            <rect class="vehicle-component" id="comp-inverter" x="320" y="178" width="36" height="44" rx="6" fill="#e8b95f" opacity="0.75"/>
+                            <rect class="vehicle-component" id="comp-motor" x="370" y="178" width="32" height="44" rx="6" fill="#c2185b" opacity="0.85"/>
+
+                            <text x="120" y="172" fill="#b89aa3" font-size="11" font-family="Manrope">Cargador</text>
+                            <text x="218" y="172" fill="#b89aa3" font-size="11" font-family="Manrope">Batería</text>
+                            <text x="312" y="172" fill="#b89aa3" font-size="11" font-family="Manrope">Inversor</text>
+                            <text x="368" y="172" fill="#b89aa3" font-size="11" font-family="Manrope">Motor</text>
+                        </svg>
+                        <div style="text-align:center; color: var(--text-lo); font-size:0.8rem; margin-top:0.5rem;">
+                            Toca un componente para inspeccionarlo
                         </div>
-                    `).join('')}
+                    </div>
+                    <div class="twin-info">
+                        <h3 id="twinTitle" style="font-family: var(--display); font-size:1.3rem; margin-bottom:0.3rem;">Batería de Tracción</h3>
+                        <p id="twinDesc" style="color: var(--text-lo); font-size:0.88rem;">Capacidad: 64 kWh · Química: NMC 811 · 96 celdas en serie</p>
+                        <div class="twin-stats">
+                            <div class="twin-stat"><div class="stat-label">SoC</div><div class="stat-value" id="twinSOC">82%</div></div>
+                            <div class="twin-stat"><div class="stat-label">Temperatura</div><div class="stat-value" id="twinTemp">28°C</div></div>
+                            <div class="twin-stat"><div class="stat-label">Eficiencia</div><div class="stat-value" id="twinEff">96%</div></div>
+                            <div class="twin-stat"><div class="stat-label">Pérdidas</div><div class="stat-value" id="twinLoss">4%</div></div>
+                        </div>
+                        <div style="margin-top:1.25rem;">
+                            <label style="font-size:0.78rem; color:var(--text-lo); display:flex; justify-content:space-between;">
+                                Estado de Carga <span class="val" id="socBarLabel">82%</span>
+                            </label>
+                            <div class="bar-track" style="margin-top:0.4rem;">
+                                <div class="bar-fill" id="socBar" style="width:82%; background: linear-gradient(90deg, var(--mint), var(--gold));">82%</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="result-card" style="margin-top: 20px;">
-                    <h4>Consejos para tu viaje</h4>
-                    <p>Con un vehículo eléctrico de ${recommendedCars[0].range} km de autonomía:</p>
-                    <ul>
-                        <li>Podrías recorrer ${(km/365).toFixed(1)} km diarios sin necesidad de cargar todos los días</li>
-                        <li>En viajes largos, necesitarías aproximadamente ${Math.ceil(km / recommendedCars[0].range * 1.2)} paradas de carga para un viaje de ${km} km</li>
-                        <li>El costo de carga sería de aproximadamente $${(km / recommendedCars[0].efficiency * 0.15).toFixed(2)} USD al año (a $0.15 USD/kWh)</li>
-                    </ul>
+            </div>
+        </section>
+
+        <!-- ===================== ENERGY FLOW ===================== -->
+        <section class="page" id="page-energy">
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Integración Renovable</div>
+                    <h2>Flujo Energético</h2>
+                    <p>Simula cómo la generación solar abastece la carga del vehículo a través del sistema de almacenamiento.</p>
                 </div>
-            `;
-            
-            document.getElementById('car-recommendations').innerHTML = recommendationsHTML;
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fas fa-diagram-project"></i> Cadena de Energía</h3>
+                    <span class="tag">Tiempo real</span>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-node"><div class="fn-icon">☀️</div><div class="fn-label">Paneles Solares</div><div class="fn-value" id="flowSolar">5.2 kW</div></div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-node"><div class="fn-icon">⚙️</div><div class="fn-label">Inversor</div><div class="fn-value" id="flowInv">96%</div></div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-node"><div class="fn-icon">🔋</div><div class="fn-label">BESS</div><div class="fn-value" id="flowBess">65%</div></div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-node"><div class="fn-icon">🔌</div><div class="fn-label">Cargador EV</div><div class="fn-value" id="flowCharger">50 kW</div></div>
+                    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="flow-node"><div class="fn-icon">🚗</div><div class="fn-label">Vehículo</div><div class="fn-value" id="flowEV">82%</div></div>
+                </div>
+            </div>
+
+            <div class="grid grid-2" style="margin-top:1.5rem;">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-sun"></i> Parámetros de Simulación</h3>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-item">
+                            <label>Irradiancia Solar <span class="val" id="irrVal">850 W/m²</span></label>
+                            <input type="range" id="irradiance" min="0" max="1200" value="850">
+                        </div>
+                        <div class="control-item">
+                            <label>Demanda del Vehículo <span class="val" id="demandVal">50 kW</span></label>
+                            <input type="range" id="demand" min="0" max="150" value="50">
+                        </div>
+                    </div>
+                    <button class="btn" style="margin-top:1.25rem;" onclick="simulateRenewable()">Ejecutar Simulación</button>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-chart-area"></i> Generación vs Demanda</h3>
+                        <span class="tag">kW</span>
+                    </div>
+                    <div id="chartGenDemand"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== MAP ===================== -->
+        <section class="page" id="page-map">
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Red de Carga</div>
+                    <h2>Estaciones Disponibles</h2>
+                    <p>Localiza puntos de carga cercanos por tipo de conector y disponibilidad.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fas fa-charging-station"></i> Mapa de Estaciones</h3>
+                    <div style="display:flex; gap:0.6rem;">
+                        <select id="connectorFilter" onchange="renderStations()">
+                            <option value="all">Todos los conectores</option>
+                            <option value="CCS">CCS Combo</option>
+                            <option value="NACS">NACS (Tesla)</option>
+                            <option value="CHAdeMO">CHAdeMO</option>
+                            <option value="GB/T">GB/T</option>
+                        </select>
+                        <button class="btn-ghost btn" onclick="findNearest()"><i class="fas fa-location-crosshairs"></i> Más cercana</button>
+                    </div>
+                </div>
+                <div id="map"></div>
+                <div class="legend">
+                    <span><span class="dot" style="background:var(--mint)"></span> Disponible</span>
+                    <span><span class="dot" style="background:var(--ember)"></span> Ocupada</span>
+                </div>
+                <div id="stationList" style="margin-top:1.25rem;"></div>
+            </div>
+        </section>
+
+        <!-- ===================== SIMULATOR ===================== -->
+        <section class="page" id="page-sim">
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Planificación</div>
+                    <h2>Simulador de Ruta</h2>
+                    <p>Ajusta condiciones ambientales y de uso para estimar el consumo y la autonomía resultante.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fas fa-sliders"></i> Variables de Operación</h3>
+                </div>
+                <div class="control-group">
+                    <div class="control-item">
+                        <label>Temperatura ambiente <span class="val" id="tempVal">25°C</span></label>
+                        <input type="range" id="ambientTemp" min="-10" max="45" value="25">
+                    </div>
+                    <div class="control-item">
+                        <label>Pendiente del terreno <span class="val" id="slopeVal">0%</span></label>
+                        <input type="range" id="slope" min="0" max="15" value="0" step="0.5">
+                    </div>
+                    <div class="control-item">
+                        <label>Pasajeros <span class="val" id="passVal">1</span></label>
+                        <input type="range" id="passengers" min="1" max="5" value="1">
+                    </div>
+                    <div class="control-item">
+                        <label>Aire acondicionado <span class="val" id="acVal">0 kW</span></label>
+                        <input type="range" id="acPower" min="0" max="5" value="0" step="0.5">
+                    </div>
+                    <div class="control-item">
+                        <label>Velocidad media <span class="val" id="speedVal">60 km/h</span></label>
+                        <input type="range" id="speed" min="30" max="130" value="60">
+                    </div>
+                </div>
+                <button class="btn" style="margin-top:1.25rem;" onclick="updateSimulation()">Actualizar Simulación</button>
+            </div>
+
+            <div class="grid grid-2" style="margin-top:1.5rem;">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-road"></i> Resultados</h3>
+                    </div>
+                    <div class="grid grid-metrics" style="margin-top:0;">
+                        <div class="twin-stat"><div class="stat-label">Consumo Estimado</div><div class="stat-value" id="simConsumption">165 Wh/km</div></div>
+                        <div class="twin-stat"><div class="stat-label">Autonomía Resultante</div><div class="stat-value" id="simRange">412 km</div></div>
+                        <div class="twin-stat"><div class="stat-label">Tiempo de Carga</div><div class="stat-value" id="simChargeTime">4.5 h</div></div>
+                        <div class="twin-stat"><div class="stat-label">Eficiencia</div><div class="stat-value" id="simEfficiency">94.2%</div></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-gauge"></i> Consumo vs Velocidad</h3>
+                        <span class="tag">Wh/km</span>
+                    </div>
+                    <div id="chartSpeedConsumption"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== PHYSICS MODEL ===================== -->
+        <section class="page" id="page-physics">
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Ingeniería Aplicada</div>
+                    <h2>Modelo Físico de Tracción</h2>
+                    <p>Cálculo de fuerzas resistivas, potencia requerida y energía consumida a partir de parámetros reales del vehículo.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fas fa-car-rear"></i> Parámetros del Vehículo y Ruta</h3>
+                </div>
+                <div class="control-group">
+                    <div class="control-item">
+                        <label>Masa total (m) <span class="val" id="pMassVal">1850 kg</span></label>
+                        <input type="range" id="pMass" min="1200" max="2800" step="10" value="1850">
+                    </div>
+                    <div class="control-item">
+                        <label>Velocidad (v) <span class="val" id="pSpeedVal">90 km/h</span></label>
+                        <input type="range" id="pSpeed" min="0" max="180" step="1" value="90">
+                    </div>
+                    <div class="control-item">
+                        <label>Pendiente (θ) <span class="val" id="pSlopeVal">0°</span></label>
+                        <input type="range" id="pSlope" min="-10" max="10" step="0.5" value="0">
+                    </div>
+                    <div class="control-item">
+                        <label>Coef. aerodinámico (Cd) <span class="val" id="pCdVal">0.28</span></label>
+                        <input type="range" id="pCd" min="0.20" max="0.45" step="0.01" value="0.28">
+                    </div>
+                    <div class="control-item">
+                        <label>Área frontal (A) <span class="val" id="pAreaVal">2.30 m²</span></label>
+                        <input type="range" id="pArea" min="1.8" max="3.2" step="0.05" value="2.30">
+                    </div>
+                    <div class="control-item">
+                        <label>Coef. rodamiento (Cr) <span class="val" id="pCrVal">0.0090</span></label>
+                        <input type="range" id="pCr" min="0.005" max="0.020" step="0.0005" value="0.0090">
+                    </div>
+                </div>
+                <button class="btn" style="margin-top:1.25rem;" onclick="updatePhysics()">Calcular</button>
+            </div>
+
+            <div class="grid grid-2" style="margin-top:1.5rem;">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-square-root-variable"></i> Ecuaciones del Modelo</h3>
+                        <span class="tag">SI</span>
+                    </div>
+                    <div class="formula-box">F_d = ½ · ρ · Cd · A · v²<span class="unit">— fuerza aerodinámica [N]</span></div>
+                    <div class="formula-box">F_r = Cr · m · g · cos(θ)<span class="unit">— resistencia a la rodadura [N]</span></div>
+                    <div class="formula-box">F_p = m · g · sin(θ)<span class="unit">— fuerza de pendiente [N]</span></div>
+                    <div class="formula-box">P = (F_d + F_r + F_p) · v<span class="unit">— potencia de tracción [W]</span></div>
+                    <div class="formula-box">E = P · Δt<span class="unit">— energía por intervalo [J → kWh]</span></div>
+                    <div class="formula-note">ρ = 1.225 kg/m³ (densidad del aire) · g = 9.81 m/s²</div>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-chart-column"></i> Descomposición de Fuerzas</h3>
+                        <span class="tag">N</span>
+                    </div>
+                    <div id="chartForces"></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:1.5rem;">
+                <div class="card-head">
+                    <h3><i class="fas fa-bolt-lightning"></i> Resultados del Cálculo</h3>
+                </div>
+                <div class="grid grid-metrics" style="margin-top:0;">
+                    <div class="twin-stat"><div class="stat-label">F. Aerodinámica (Fd)</div><div class="stat-value" id="rFd">0 N</div></div>
+                    <div class="twin-stat"><div class="stat-label">F. Rodamiento (Fr)</div><div class="stat-value" id="rFr">0 N</div></div>
+                    <div class="twin-stat"><div class="stat-label">F. Pendiente (Fp)</div><div class="stat-value" id="rFp">0 N</div></div>
+                    <div class="twin-stat"><div class="stat-label">F. Total</div><div class="stat-value" id="rFtotal">0 N</div></div>
+                    <div class="twin-stat"><div class="stat-label">Potencia (P = F·v)</div><div class="stat-value" id="rPower">0 kW</div></div>
+                    <div class="twin-stat"><div class="stat-label">Consumo específico</div><div class="stat-value" id="rSpecific">0 Wh/km</div></div>
+                    <div class="twin-stat"><div class="stat-label">Energía / 100 km</div><div class="stat-value" id="rEnergy100">0 kWh</div></div>
+                    <div class="twin-stat"><div class="stat-label">Autonomía estimada</div><div class="stat-value" id="rRangePhysics">0 km</div></div>
+                </div>
+            </div>
+
+            <div class="grid grid-2" style="margin-top:1.5rem;">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-gauge-high"></i> Potencia AC / DC / Regenerativa</h3>
+                        <span class="tag">kW</span>
+                    </div>
+                    <div id="chartPowerSplit"></div>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-rotate"></i> Torque, RPM y Eficiencia del Motor</h3>
+                        <span class="tag">Motor</span>
+                    </div>
+                    <div id="chartMotor"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== BATTERY THEVENIN ===================== -->
+        <section class="page" id="page-battery">
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Ingeniería de Baterías</div>
+                    <h2>Modelo Eléctrico Thevenin (2RC)</h2>
+                    <p>Circuito equivalente con resistencia interna y dos pares RC para dinámica de difusión, usado para estimar SOC, SOH, SOP y SOE.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-diagram-project"></i> Circuito Equivalente</h3>
+                        <span class="tag">2RC</span>
+                    </div>
+                    <div class="circuit-wrap">
+                        <svg width="100%" height="200" viewBox="0 0 460 200" xmlns="http://www.w3.org/2000/svg" style="max-width:460px;">
+                            <!-- OCV source -->
+                            <line x1="20" y1="100" x2="60" y2="100" stroke="#e8b95f" stroke-width="2"/>
+                            <line x1="60" y1="80" x2="60" y2="120" stroke="#e8b95f" stroke-width="3"/>
+                            <line x1="75" y1="90" x2="75" y2="110" stroke="#e8b95f" stroke-width="2"/>
+                            <text x="35" y="75" fill="#b89aa3" font-size="12" font-family="JetBrains Mono">V_oc</text>
+
+                            <!-- R0 -->
+                            <line x1="75" y1="100" x2="100" y2="100" stroke="#f7e9ec" stroke-width="2"/>
+                            <rect x="100" y="90" width="50" height="20" fill="none" stroke="#c2185b" stroke-width="2" rx="3"/>
+                            <text x="105" y="85" fill="#b89aa3" font-size="12" font-family="JetBrains Mono">R0</text>
+                            <line x1="150" y1="100" x2="180" y2="100" stroke="#f7e9ec" stroke-width="2"/>
+
+                            <!-- R1 C1 block -->
+                            <line x1="180" y1="100" x2="180" y2="60" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="180" y1="100" x2="180" y2="140" stroke="#f7e9ec" stroke-width="2"/>
+                            <rect x="180" y="50" width="50" height="20" fill="none" stroke="#6fd8b8" stroke-width="2" rx="3"/>
+                            <text x="240" y="65" fill="#b89aa3" font-size="12" font-family="JetBrains Mono">R1</text>
+                            <line x1="180" y1="135" x2="195" y2="135" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="195" y1="128" x2="195" y2="142" stroke="#f7e9ec" stroke-width="3"/>
+                            <line x1="205" y1="128" x2="205" y2="142" stroke="#f7e9ec" stroke-width="3"/>
+                            <line x1="205" y1="135" x2="220" y2="135" stroke="#f7e9ec" stroke-width="2"/>
+                            <text x="240" y="140" fill="#b89aa3" font-size="12" font-family="JetBrains Mono">C1</text>
+                            <line x1="230" y1="60" x2="270" y2="60" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="220" y1="135" x2="270" y2="135" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="270" y1="60" x2="270" y2="100" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="270" y1="100" x2="270" y2="135" stroke="#f7e9ec" stroke-width="2"/>
+
+                            <!-- R2 C2 block -->
+                            <line x1="270" y1="100" x2="270" y2="100" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="270" y1="100" x2="300" y2="100" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="300" y1="100" x2="300" y2="60" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="300" y1="100" x2="300" y2="140" stroke="#f7e9ec" stroke-width="2"/>
+                            <rect x="300" y="50" width="50" height="20" fill="none" stroke="#6fd8b8" stroke-width="2" rx="3"/>
+                            <text x="360" y="65" fill="#b89aa3" font-size="12" font-family="JetBrains Mono">R2</text>
+                            <line x1="300" y1="135" x2="315" y2="135" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="315" y1="128" x2="315" y2="142" stroke="#f7e9ec" stroke-width="3"/>
+                            <line x1="325" y1="128" x2="325" y2="142" stroke="#f7e9ec" stroke-width="3"/>
+                            <line x1="325" y1="135" x2="340" y2="135" stroke="#f7e9ec" stroke-width="2"/>
+                            <text x="360" y="140" fill="#b89aa3" font-size="12" font-family="JetBrains Mono">C2</text>
+                            <line x1="350" y1="60" x2="390" y2="60" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="340" y1="135" x2="390" y2="135" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="390" y1="60" x2="390" y2="100" stroke="#f7e9ec" stroke-width="2"/>
+                            <line x1="390" y1="100" x2="390" y2="135" stroke="#f7e9ec" stroke-width="2"/>
+
+                            <!-- terminal -->
+                            <line x1="390" y1="100" x2="430" y2="100" stroke="#f7e9ec" stroke-width="2"/>
+                            <circle cx="20" cy="100" r="3" fill="#e8b95f"/>
+                            <circle cx="430" cy="100" r="3" fill="#e8b95f"/>
+                            <text x="395" y="120" fill="#b89aa3" font-size="12" font-family="JetBrains Mono">V_t</text>
+                        </svg>
+                    </div>
+                    <div class="formula-box">V_t = V_oc(SOC) − I·R0 − V1 − V2<span class="unit">— voltaje en terminales</span></div>
+                    <div class="formula-box">dV1/dt = I/C1 − V1/(R1·C1)<span class="unit">— rama de difusión rápida</span></div>
+                    <div class="formula-box">dV2/dt = I/C2 − V2/(R2·C2)<span class="unit">— rama de difusión lenta</span></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-sliders"></i> Excitación de Corriente</h3>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-item">
+                            <label>Corriente aplicada (I) <span class="val" id="bCurrentVal">-50 A</span></label>
+                            <input type="range" id="bCurrent" min="-200" max="200" step="5" value="-50">
+                            <div class="formula-note">Negativo = descarga · Positivo = carga</div>
+                        </div>
+                        <div class="control-item">
+                            <label>Ciclos acumulados <span class="val" id="bCyclesVal">320</span></label>
+                            <input type="range" id="bCycles" min="0" max="2000" step="10" value="320">
+                        </div>
+                    </div>
+                    <button class="btn" style="margin-top:1.25rem;" onclick="runBatterySim()">Aplicar Corriente (60 s)</button>
+                    <button class="btn-ghost btn" style="margin-top:1.25rem;" onclick="resetBattery()">Reiniciar Modelo</button>
+
+                    <div class="grid grid-metrics" style="margin-top:1.25rem;">
+                        <div class="twin-stat"><div class="stat-label">SOC</div><div class="stat-value" id="bSOC">82.0%</div></div>
+                        <div class="twin-stat"><div class="stat-label">SOH</div><div class="stat-value" id="bSOH">96.5%</div></div>
+                        <div class="twin-stat"><div class="stat-label">SOP</div><div class="stat-value" id="bSOP">0 kW</div></div>
+                        <div class="twin-stat"><div class="stat-label">SOE</div><div class="stat-value" id="bSOE">0 kWh</div></div>
+                        <div class="twin-stat"><div class="stat-label">V_oc</div><div class="stat-value" id="bVoc">3.85 V/celda</div></div>
+                        <div class="twin-stat"><div class="stat-label">V_terminal</div><div class="stat-value" id="bVt">3.85 V/celda</div></div>
+                        <div class="twin-stat"><div class="stat-label">R0 (interna)</div><div class="stat-value" id="bR0">35 mΩ</div></div>
+                        <div class="twin-stat"><div class="stat-label">Capacidad efectiva</div><div class="stat-value" id="bCapEff">61.8 Ah</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2" style="margin-top:1.5rem;">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-chart-line"></i> Respuesta de Voltaje (V_oc vs V_t)</h3>
+                        <span class="tag">V/celda</span>
+                    </div>
+                    <div id="chartVoltage"></div>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-chart-area"></i> Degradación de Capacidad (SOH)</h3>
+                        <span class="tag">% vs ciclos</span>
+                    </div>
+                    <div id="chartSOH"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-2" style="margin-top:1.5rem;">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-temperature-half"></i> Temperatura de Celdas</h3>
+                        <span class="tag">°C</span>
+                    </div>
+                    <div id="chartCellTemp"></div>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-water"></i> Impedancia Interna (R0)</h3>
+                        <span class="tag">mΩ vs ciclos</span>
+                    </div>
+                    <div id="chartImpedance"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== POWER QUALITY ===================== -->
+        <section class="page" id="page-quality">
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Ingeniería Eléctrica</div>
+                    <h2>Calidad de Energía</h2>
+                    <p>Indicadores de la interfaz cargador–red: distorsión armónica, factor de potencia, frecuencia y desequilibrio.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-kpi">
+                <div class="card kpi" style="--kpi-color: var(--gold); --kpi-glow: var(--gold);">
+                    <div class="icon"><i class="fas fa-wave-square"></i></div>
+                    <div class="kpi-value" id="qThd">3.8%</div>
+                    <div class="kpi-label">THD corriente (IEC 61000-3-2)</div>
+                    <div class="kpi-delta" style="color:var(--text-lo);">Límite recomendado: 5%</div>
+                </div>
+                <div class="card kpi" style="--kpi-color: var(--mint); --kpi-glow: var(--mint);">
+                    <div class="icon"><i class="fas fa-bolt"></i></div>
+                    <div class="kpi-value" id="qFp">0.98</div>
+                    <div class="kpi-label">Factor de Potencia</div>
+                    <div class="kpi-delta delta-up"><i class="fas fa-arrow-up"></i> Corrección activa PFC</div>
+                </div>
+                <div class="card kpi" style="--kpi-color: var(--ember); --kpi-glow: var(--ember);">
+                    <div class="icon"><i class="fas fa-chart-simple"></i></div>
+                    <div class="kpi-value" id="qFreq">60.01 Hz</div>
+                    <div class="kpi-label">Frecuencia de Red</div>
+                    <div class="kpi-delta" style="color:var(--text-lo);">Nominal: 60 Hz ± 0.5%</div>
+                </div>
+                <div class="card kpi" style="--kpi-color: var(--guinda-accent); --kpi-glow: var(--guinda-accent);">
+                    <div class="icon"><i class="fas fa-scale-unbalanced"></i></div>
+                    <div class="kpi-value" id="qUnbal">1.2%</div>
+                    <div class="kpi-label">Desequilibrio de Voltaje</div>
+                    <div class="kpi-delta" style="color:var(--text-lo);">Límite NOM: 3%</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fas fa-sliders"></i> Modulación del Convertidor</h3>
+                </div>
+                <div class="control-group">
+                    <div class="control-item">
+                        <label>Estrategia PWM</label>
+                        <select id="pwmStrategy" onchange="updateQuality()" style="width:100%;">
+                            <option value="spwm">SPWM — Sinusoidal</option>
+                            <option value="svpwm">SVPWM — Vector Espacial</option>
+                            <option value="pwm">PWM Convencional</option>
+                        </select>
+                    </div>
+                    <div class="control-item">
+                        <label>Ciclo de trabajo (Duty Cycle) <span class="val" id="dutyVal">75%</span></label>
+                        <input type="range" id="dutyCycle" min="10" max="95" value="75" oninput="updateQuality()">
+                    </div>
+                    <div class="control-item">
+                        <label>Modo de carga IEC 61851</label>
+                        <select id="chargeMode" onchange="updateQuality()" style="width:100%;">
+                            <option value="1">Modo 1 — AC, hasta 16 A</option>
+                            <option value="2">Modo 2 — AC con protección en cable</option>
+                            <option value="3" selected>Modo 3 — AC, EVSE dedicado</option>
+                            <option value="4">Modo 4 — DC rápido</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-metrics" style="margin-top:1.25rem;">
+                    <div class="twin-stat"><div class="stat-label">Protocolo</div><div class="stat-value" id="qProtocol" style="font-size:1.05rem;">OCPP 1.6 / ISO 15118</div></div>
+                    <div class="twin-stat"><div class="stat-label">TDD</div><div class="stat-value" id="qTdd">2.9%</div></div>
+                    <div class="twin-stat"><div class="stat-label">Voltaje RMS</div><div class="stat-value" id="qVrms">220.4 V</div></div>
+                    <div class="twin-stat"><div class="stat-label">Corriente RMS</div><div class="stat-value" id="qIrms">32.1 A</div></div>
+                </div>
+            </div>
+
+            <div class="grid grid-2" style="margin-top:1.5rem;">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-chart-bar"></i> Espectro Armónico de Corriente</h3>
+                        <span class="tag">% del fundamental</span>
+                    </div>
+                    <div id="chartHarmonics"></div>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-wave-square"></i> Forma de Onda — Modulación</h3>
+                        <span class="tag" id="qModTag">SPWM</span>
+                    </div>
+                    <div id="chartWaveform"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-2" style="margin-top:1.5rem;">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-charging-station"></i> Eficiencia del Cargador vs Potencia</h3>
+                        <span class="tag">%</span>
+                    </div>
+                    <div id="chartChargerEff"></div>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-microchip"></i> Tecnología de Semiconductores</h3>
+                        <span class="tag">Pérdidas relativas</span>
+                    </div>
+                    <div id="chartSemiconductor"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== EXECUTIVE DASHBOARD ===================== -->
+        <section class="page" id="page-executive">
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Negocio</div>
+                    <h2>Dashboard Ejecutivo</h2>
+                    <p>Indicadores financieros y de sostenibilidad para evaluar el proyecto de electromovilidad.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-kpi">
+                <div class="card kpi" style="--kpi-color: var(--gold); --kpi-glow: var(--gold);">
+                    <div class="icon"><i class="fas fa-coins"></i></div>
+                    <div class="exec-highlight" id="eRoi">24.6%</div>
+                    <div class="kpi-label">ROI a 10 años</div>
+                </div>
+                <div class="card kpi" style="--kpi-color: var(--mint); --kpi-glow: var(--mint);">
+                    <div class="icon"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="exec-highlight" id="ePayback">4.2 años</div>
+                    <div class="kpi-label">Periodo de Recuperación</div>
+                </div>
+                <div class="card kpi" style="--kpi-color: var(--ember); --kpi-glow: var(--ember);">
+                    <div class="icon"><i class="fas fa-sack-dollar"></i></div>
+                    <div class="exec-highlight" id="eNpv">$18,450</div>
+                    <div class="kpi-label">VPN (NPV) a 10 años</div>
+                </div>
+                <div class="card kpi" style="--kpi-color: var(--guinda-accent); --kpi-glow: var(--guinda-accent);">
+                    <div class="icon"><i class="fas fa-percent"></i></div>
+                    <div class="exec-highlight" id="eIrr">19.3%</div>
+                    <div class="kpi-label">TIR (IRR)</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3><i class="fas fa-calculator"></i> Supuestos Financieros</h3>
+                </div>
+                <div class="control-group">
+                    <div class="control-item">
+                        <label>CAPEX inicial <span class="val" id="eCapexVal">$32,000</span></label>
+                        <input type="range" id="eCapex" min="10000" max="80000" step="500" value="32000">
+                    </div>
+                    <div class="control-item">
+                        <label>OPEX anual <span class="val" id="eOpexVal">$1,200</span></label>
+                        <input type="range" id="eOpex" min="200" max="5000" step="50" value="1200">
+                    </div>
+                    <div class="control-item">
+                        <label>Ahorro anual estimado <span class="val" id="eSavingsVal">$4,800</span></label>
+                        <input type="range" id="eSavings" min="1000" max="15000" step="100" value="4800">
+                    </div>
+                    <div class="control-item">
+                        <label>Tasa de descuento <span class="val" id="eRateVal">8%</span></label>
+                        <input type="range" id="eRate" min="2" max="20" step="0.5" value="8">
+                    </div>
+                    <div class="control-item">
+                        <label>Horizonte (años) <span class="val" id="eYearsVal">10</span></label>
+                        <input type="range" id="eYears" min="3" max="20" step="1" value="10">
+                    </div>
+                </div>
+                <button class="btn" style="margin-top:1.25rem;" onclick="updateExecutive()">Recalcular</button>
+            </div>
+
+            <div class="grid grid-2" style="margin-top:1.5rem;">
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-chart-area"></i> Flujo de Caja Acumulado</h3>
+                        <span class="tag">$</span>
+                    </div>
+                    <div id="chartCashflow"></div>
+                </div>
+                <div class="card">
+                    <div class="card-head">
+                        <h3><i class="fas fa-leaf"></i> Costos y Emisiones</h3>
+                        <span class="tag">Comparativo</span>
+                    </div>
+                    <div id="chartCostsCo2"></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:1.5rem;">
+                <div class="card-head">
+                    <h3><i class="fas fa-receipt"></i> Desglose de Costos Operativos</h3>
+                </div>
+                <div class="grid grid-metrics" style="margin-top:0;">
+                    <div class="twin-stat"><div class="stat-label">Costo por día</div><div class="stat-value" id="eCostDay">$2.16</div></div>
+                    <div class="twin-stat"><div class="stat-label">Costo mensual</div><div class="stat-value" id="eCostMonth">$64.80</div></div>
+                    <div class="twin-stat"><div class="stat-label">Costo anual</div><div class="stat-value" id="eCostYear">$788</div></div>
+                    <div class="twin-stat"><div class="stat-label">Costo por km</div><div class="stat-value" id="eCostKm">$0.025</div></div>
+                    <div class="twin-stat"><div class="stat-label">Costo por carga</div><div class="stat-value" id="eCostCharge">$7.88</div></div>
+                    <div class="twin-stat"><div class="stat-label">Emisiones evitadas/año</div><div class="stat-value" id="eCo2Year">7.6 t</div></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+    /* ===================== STATE ===================== */
+    let currentSOC = 82;
+    const BATTERY_KWH = 64;
+    let map, stationMarkers = [];
+
+    const stations = [
+        { name: "Central CCS Reforma", lat: 19.4326, lng: -99.1332, power: 150, connector: "CCS", price: 0.15, available: true, slots: 4 },
+        { name: "Supercharger Polanco", lat: 19.4330, lng: -99.1900, power: 250, connector: "NACS", price: 0.12, available: true, slots: 8 },
+        { name: "CHAdeMO Express Sur", lat: 19.3600, lng: -99.1700, power: 50, connector: "CHAdeMO", price: 0.18, available: false, slots: 0 },
+        { name: "Estación GB/T Coyoacán", lat: 19.3500, lng: -99.1600, power: 120, connector: "GB/T", price: 0.14, available: true, slots: 3 },
+        { name: "CCS UltraFast Satelite", lat: 19.5000, lng: -99.2300, power: 350, connector: "CCS", price: 0.20, available: true, slots: 6 },
+        { name: "NACS Centro Histórico", lat: 19.4200, lng: -99.1330, power: 150, connector: "NACS", price: 0.13, available: true, slots: 5 },
+        { name: "CCS Aeropuerto", lat: 19.4360, lng: -99.0820, power: 100, connector: "CCS", price: 0.16, available: true, slots: 2 },
+        { name: "CHAdeMO Tlalpan", lat: 19.2900, lng: -99.1600, power: 62, connector: "CHAdeMO", price: 0.17, available: false, slots: 1 }
+    ];
+
+    const chartTheme = {
+        background: 'transparent',
+        foreColor: '#b89aa3'
+    };
+    const palette = {
+        guinda: '#c2185b',
+        ember: '#ff7a45',
+        gold: '#e8b95f',
+        mint: '#6fd8b8',
+        line: 'rgba(232,185,95,0.12)'
+    };
+
+    /* ===================== CONSTANTS ===================== */
+    const AIR_DENSITY = 1.225;   // kg/m3
+    const GRAVITY = 9.81;        // m/s2
+    const NOMINAL_VOLTAGE = 3.85; // V per cell at mid SOC
+    const CELLS_SERIES = 96;
+    const NOMINAL_CAPACITY_AH = 64000 / (NOMINAL_VOLTAGE * CELLS_SERIES); // ~173 Ah pack -> per-cell basis simplified
+    const ELECTRICITY_RATE = 0.15; // $/kWh
+    const CO2_FACTOR = 0.4;        // kg CO2 / kWh avoided
+
+    /* ===================== BATTERY THEVENIN STATE ===================== */
+    const battery = {
+        soc: 82,            // %
+        soh: 96.5,          // %
+        capacityAh: 61.8,   // effective Ah (per-cell equivalent basis)
+        nominalAh: 64,
+        r0: 0.035,          // ohm (per cell equivalent, milliohm display)
+        r1: 0.02, c1: 1500, // fast RC
+        r2: 0.015, c2: 6000,// slow RC
+        v1: 0, v2: 0,       // RC branch voltages
+        temp: 28,
+        cycles: 320,
+        vocCurve: soc => 3.4 + 0.55 * (soc / 100) - 0.15 * Math.pow(1 - soc / 100, 3)
+    };
+
+
+    /* ===================== INIT ===================== */
+    document.addEventListener('DOMContentLoaded', () => {
+        setupNavigation();
+        startClock();
+        renderConsumptionChart();
+        renderLossesChart();
+        renderGenDemandChart();
+        renderSpeedChart();
+        initTwin();
+        initMap();
+        renderStations();
+        renderAlerts();
+        renderHistChart();
+        updatePhysics();
+        initBatteryCharts();
+        resetBattery();
+        initQualityCharts();
+        updateQuality();
+        initExecutiveCharts();
+        updateExecutive();
+        setInterval(simulateRealtime, 8000);
+    });
+
+    function setupNavigation() {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                item.classList.add('active');
+                document.getElementById('page-' + item.dataset.page).classList.add('active');
+                if (item.dataset.page === 'map' && map) setTimeout(() => map.invalidateSize(), 150);
+                document.getElementById('sidebar').classList.remove('open');
+            });
+        });
+        document.getElementById('mobileToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+    }
+
+    function startClock() {
+        const update = () => {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        };
+        update();
+        setInterval(update, 1000);
+    }
+
+    /* ===================== ALERTS ===================== */
+    const alerts = [
+        { level: 'ok',   icon: 'fa-circle-check',        title: 'Sistema BMS operando con normalidad', meta: 'Hace 2 minutos' },
+        { level: 'warn', icon: 'fa-temperature-three-quarters', title: 'Temperatura de batería elevada (38°C)', meta: 'Hace 12 minutos · Umbral: 40°C' },
+        { level: 'crit', icon: 'fa-triangle-exclamation', title: 'Voltaje de celda por debajo del umbral mínimo', meta: 'Hace 28 minutos · Celda 47: 2.98 V' },
+        { level: 'ok',   icon: 'fa-plug-circle-check',    title: 'Cargador conectado y comunicando vía OCPP', meta: 'Hace 1 hora' }
+    ];
+
+    function renderAlerts() {
+        const critCount = alerts.filter(a => a.level !== 'ok').length;
+        document.getElementById('alertCount').textContent = `${critCount} activas`;
+        document.getElementById('alertList').innerHTML = alerts.map(a => `
+            <div class="alert-row ${a.level}">
+                <div class="a-icon"><i class="fas ${a.icon}"></i></div>
+                <div class="a-body">
+                    <div class="a-title">${a.title}</div>
+                    <div class="a-meta">${a.meta}</div>
+                </div>
+                <span class="badge ${a.level}">${a.level === 'ok' ? 'Normal' : a.level === 'warn' ? 'Advertencia' : 'Crítico'}</span>
+            </div>
+        `).join('');
+    }
+
+    /* ===================== HISTORY CHART ===================== */
+    let histChart;
+    const histData = {
+        week:  { cats: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], current: [38,42,40,45,50,30,25], previous: [40,40,38,42,48,32,28] },
+        month: { cats: ['Sem 1','Sem 2','Sem 3','Sem 4'], current: [280, 305, 295, 312], previous: [270, 290, 300, 298] },
+        year:  { cats: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'], current: [1180,1150,1220,1260,1300,1340,1380,1360,1290,1240,1200,1230], previous: [1100,1120,1150,1200,1250,1280,1320,1300,1260,1210,1180,1200] }
+    };
+
+    function renderHistChart() {
+        const range = document.getElementById('histRange').value;
+        const d = histData[range];
+        const opts = {
+            series: [
+                { name: 'Periodo actual', data: d.current },
+                { name: 'Periodo anterior', data: d.previous }
+            ],
+            chart: { type: 'bar', height: 280, ...chartTheme, toolbar: { show: false } },
+            xaxis: { categories: d.cats, labels: { style: { colors: '#b89aa3' } } },
+            yaxis: { labels: { style: { colors: '#b89aa3' } } },
+            grid: { borderColor: palette.line },
+            colors: [palette.guinda, '#7a1a35'],
+            plotOptions: { bar: { borderRadius: 5, columnWidth: '55%' } },
+            dataLabels: { enabled: false },
+            legend: { labels: { colors: '#b89aa3' } },
+            tooltip: { theme: 'dark' }
+        };
+        if (histChart) { histChart.updateOptions(opts); }
+        else { histChart = new ApexCharts(document.querySelector("#chartHistory"), opts); histChart.render(); }
+    }
+
+    /* ===================== CHARTS ===================== */
+    function renderConsumptionChart() {
+        new ApexCharts(document.querySelector("#chartConsumption"), {
+            series: [{ name: 'Consumo', data: [1.2, 0.8, 0.6, 0.9, 1.5, 2.8, 4.2, 3.6, 2.9, 3.1, 3.4, 2.7, 3.0, 3.3, 3.8, 4.5, 5.2, 4.8, 3.6, 2.8, 2.1, 1.8, 1.4, 1.1] }],
+            chart: { type: 'area', height: 280, ...chartTheme, toolbar: { show: false } },
+            xaxis: { categories: ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'], labels: { style: { colors: '#b89aa3' } } },
+            yaxis: { labels: { style: { colors: '#b89aa3' } } },
+            grid: { borderColor: palette.line },
+            colors: [palette.guinda],
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
+            stroke: { width: 2.5, curve: 'smooth' },
+            dataLabels: { enabled: false },
+            tooltip: { theme: 'dark' }
+        }).render();
+    }
+
+    function renderLossesChart() {
+        new ApexCharts(document.querySelector("#chartLosses"), {
+            series: [5.8, 3.2, 2.5, 1.2, 0.8],
+            chart: { type: 'donut', height: 280, ...chartTheme },
+            labels: ['Térmicas', 'Conmutación', 'Resistivas', 'Fricción', 'Otras'],
+            colors: [palette.ember, palette.guinda, palette.gold, palette.mint, '#7a1a35'],
+            legend: { position: 'bottom', labels: { colors: '#b89aa3' } },
+            dataLabels: { enabled: true },
+            stroke: { show: false },
+            tooltip: { theme: 'dark' }
+        }).render();
+    }
+
+    let genDemandChart;
+    function renderGenDemandChart() {
+        genDemandChart = new ApexCharts(document.querySelector("#chartGenDemand"), {
+            series: [
+                { name: 'Generación Solar', data: [0.5, 2.1, 4.2, 5.8, 6.2, 5.1, 3.2, 1.0] },
+                { name: 'Demanda EV', data: [3.5, 3.8, 4.0, 4.5, 5.0, 4.8, 4.2, 3.5] }
+            ],
+            chart: { type: 'line', height: 280, ...chartTheme, toolbar: { show: false } },
+            xaxis: { categories: ['6am','8am','10am','12pm','2pm','4pm','6pm','8pm'], labels: { style: { colors: '#b89aa3' } } },
+            yaxis: { labels: { style: { colors: '#b89aa3' } } },
+            grid: { borderColor: palette.line },
+            colors: [palette.gold, palette.mint],
+            stroke: { width: 3, curve: 'smooth' },
+            dataLabels: { enabled: false },
+            tooltip: { theme: 'dark' }
+        });
+        genDemandChart.render();
+    }
+
+    let speedChart;
+    function renderSpeedChart() {
+        speedChart = new ApexCharts(document.querySelector("#chartSpeedConsumption"), {
+            series: [{ name: 'Consumo', data: [145, 152, 160, 165, 178, 200, 230, 268] }],
+            chart: { type: 'bar', height: 280, ...chartTheme, toolbar: { show: false } },
+            xaxis: { categories: ['30','50','70','90','110','130','150','170'], labels: { style: { colors: '#b89aa3' } } },
+            yaxis: { labels: { style: { colors: '#b89aa3' } } },
+            grid: { borderColor: palette.line },
+            colors: [palette.guinda],
+            plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
+            dataLabels: { enabled: false },
+            tooltip: { theme: 'dark' }
+        });
+        speedChart.render();
+    }
+
+    /* ===================== PHYSICS MODEL ===================== */
+    const physicsInputs = ['pMass', 'pSpeed', 'pSlope', 'pCd', 'pArea', 'pCr'];
+    const physicsLabels = { pMass: 'pMassVal', pSpeed: 'pSpeedVal', pSlope: 'pSlopeVal', pCd: 'pCdVal', pArea: 'pAreaVal', pCr: 'pCrVal' };
+    const physicsFormat = {
+        pMass: v => `${v} kg`,
+        pSpeed: v => `${v} km/h`,
+        pSlope: v => `${v}°`,
+        pCd: v => parseFloat(v).toFixed(2),
+        pArea: v => `${parseFloat(v).toFixed(2)} m²`,
+        pCr: v => parseFloat(v).toFixed(4)
+    };
+
+    physicsInputs.forEach(id => {
+        document.getElementById(id).addEventListener('input', e => {
+            document.getElementById(physicsLabels[id]).textContent = physicsFormat[id](e.target.value);
+            updatePhysics();
+        });
+    });
+
+    let forcesChart, powerSplitChart, motorChart;
+
+    function updatePhysics() {
+        const m = parseFloat(document.getElementById('pMass').value);
+        const vKmh = parseFloat(document.getElementById('pSpeed').value);
+        const slopeDeg = parseFloat(document.getElementById('pSlope').value);
+        const cd = parseFloat(document.getElementById('pCd').value);
+        const area = parseFloat(document.getElementById('pArea').value);
+        const cr = parseFloat(document.getElementById('pCr').value);
+
+        const v = vKmh / 3.6; // m/s
+        const theta = slopeDeg * Math.PI / 180;
+
+        // Forces
+        const Fd = 0.5 * AIR_DENSITY * cd * area * v * v;
+        const Fr = cr * m * GRAVITY * Math.cos(theta);
+        const Fp = m * GRAVITY * Math.sin(theta);
+        const Ftotal = Fd + Fr + Fp;
+
+        // Power = F * v  (Watts)
+        const Pwatts = Ftotal * v;
+        const Pkw = Pwatts / 1000;
+
+        // Specific consumption: P (kW) / v (km/h) * 1000 = Wh/km
+        const specific = vKmh > 0 ? (Pkw / vKmh) * 1000 : 0;
+        const energy100 = specific * 100 / 1000; // kWh per 100km
+        const rangeKm = specific > 0 ? (currentSOC / 100) * BATTERY_KWH * 1000 / specific : 0;
+
+        document.getElementById('rFd').textContent = `${Fd.toFixed(1)} N`;
+        document.getElementById('rFr').textContent = `${Fr.toFixed(1)} N`;
+        document.getElementById('rFp').textContent = `${Fp.toFixed(1)} N`;
+        document.getElementById('rFtotal').textContent = `${Ftotal.toFixed(1)} N`;
+        document.getElementById('rPower').textContent = `${Pkw.toFixed(2)} kW`;
+        document.getElementById('rSpecific').textContent = `${Math.max(0, specific).toFixed(0)} Wh/km`;
+        document.getElementById('rEnergy100').textContent = `${Math.max(0, energy100).toFixed(1)} kWh`;
+        document.getElementById('rRangePhysics').textContent = `${Math.max(0, Math.round(rangeKm))} km`;
+
+        if (forcesChart) {
+            forcesChart.updateSeries([{ data: [Math.round(Fd), Math.round(Fr), Math.round(Fp), Math.round(Ftotal)] }]);
+        } else {
+            forcesChart = new ApexCharts(document.querySelector("#chartForces"), {
+                series: [{ name: 'Fuerza', data: [Math.round(Fd), Math.round(Fr), Math.round(Fp), Math.round(Ftotal)] }],
+                chart: { type: 'bar', height: 280, ...chartTheme, toolbar: { show: false } },
+                xaxis: { categories: ['Aerodinámica (Fd)', 'Rodamiento (Fr)', 'Pendiente (Fp)', 'Total'], labels: { style: { colors: '#b89aa3' } } },
+                yaxis: { labels: { style: { colors: '#b89aa3' } } },
+                grid: { borderColor: palette.line },
+                colors: [palette.gold, palette.mint, palette.ember, palette.guinda],
+                plotOptions: { bar: { borderRadius: 6, distributed: true, columnWidth: '55%' } },
+                legend: { show: false },
+                dataLabels: { enabled: true },
+                tooltip: { theme: 'dark' }
+            });
+            forcesChart.render();
+        }
+
+        // Power split AC/DC/regen/aux across speed sweep
+        const speeds = [20, 40, 60, 80, 100, 120, 140];
+        const acPower = speeds.map(s => +((Pkw * (s / vKmh || 1)) * 0.97).toFixed(1));
+        const dcPower = speeds.map((s, i) => +(acPower[i] * 0.96).toFixed(1));
+        const regenPower = speeds.map(s => +(0.15 * dcPower[speeds.indexOf(s)]).toFixed(1));
+        const auxPower = speeds.map(() => 1.2);
+
+        if (powerSplitChart) {
+            powerSplitChart.updateSeries([
+                { name: 'Potencia AC', data: acPower },
+                { name: 'Potencia DC', data: dcPower },
+                { name: 'Regenerativa', data: regenPower },
+                { name: 'Auxiliar', data: auxPower }
+            ]);
+        } else {
+            powerSplitChart = new ApexCharts(document.querySelector("#chartPowerSplit"), {
+                series: [
+                    { name: 'Potencia AC', data: acPower },
+                    { name: 'Potencia DC', data: dcPower },
+                    { name: 'Regenerativa', data: regenPower },
+                    { name: 'Auxiliar', data: auxPower }
+                ],
+                chart: { type: 'line', height: 280, ...chartTheme, toolbar: { show: false } },
+                xaxis: { categories: speeds.map(s => `${s}`), title: { text: 'km/h', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+                yaxis: { labels: { style: { colors: '#b89aa3' } } },
+                grid: { borderColor: palette.line },
+                colors: [palette.gold, palette.guinda, palette.mint, palette.ember],
+                stroke: { width: 2.5, curve: 'smooth' },
+                dataLabels: { enabled: false },
+                legend: { labels: { colors: '#b89aa3' } },
+                tooltip: { theme: 'dark' }
+            });
+            powerSplitChart.render();
+        }
+
+        // Motor torque/RPM/efficiency: torque = P / omega, sweep RPM
+        const rpms = [500, 1500, 3000, 4500, 6000, 7500, 9000];
+        const torque = rpms.map(rpm => +((Pwatts) / (rpm * 2 * Math.PI / 60) || 0).toFixed(1));
+        const motorEff = rpms.map(rpm => +(90 + 8 * Math.sin((rpm / 9000) * Math.PI)).toFixed(1));
+
+        if (motorChart) {
+            motorChart.updateSeries([
+                { name: 'Torque (N·m)', data: torque },
+                { name: 'Eficiencia (%)', data: motorEff }
+            ]);
+        } else {
+            motorChart = new ApexCharts(document.querySelector("#chartMotor"), {
+                series: [
+                    { name: 'Torque (N·m)', type: 'column', data: torque },
+                    { name: 'Eficiencia (%)', type: 'line', data: motorEff }
+                ],
+                chart: { height: 280, ...chartTheme, toolbar: { show: false } },
+                xaxis: { categories: rpms.map(r => `${r}`), title: { text: 'RPM', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+                yaxis: [
+                    { title: { text: 'N·m', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+                    { opposite: true, title: { text: '%', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } }, min: 80, max: 100 }
+                ],
+                grid: { borderColor: palette.line },
+                colors: [palette.guinda, palette.gold],
+                plotOptions: { bar: { borderRadius: 5, columnWidth: '50%' } },
+                stroke: { width: [0, 3], curve: 'smooth' },
+                dataLabels: { enabled: false },
+                legend: { labels: { colors: '#b89aa3' } },
+                tooltip: { theme: 'dark' }
+            });
+            motorChart.render();
+        }
+    }
+
+    /* ===================== DIGITAL TWIN ===================== */
+    const twinComponents = {
+        motor: { name: "Motor Eléctrico", desc: "Motor síncrono de imanes permanentes · 150 kW pico", eff: 94, temp: 65, loss: 6, soc: null },
+        battery: { name: "Batería de Tracción", desc: "Capacidad: 64 kWh · Química: NMC 811 · 96 celdas en serie", eff: 96, temp: 28, loss: 4, soc: true },
+        inverter: { name: "Inversor de Tracción", desc: "Módulos IGBT · conmutación de alta frecuencia", eff: 98, temp: 45, loss: 2, soc: null },
+        charger: { name: "Cargador On-Board", desc: "11 kW AC / hasta 150 kW DC", eff: 94, temp: 35, loss: 6, soc: null }
+    };
+
+    function initTwin() {
+        document.getElementById('comp-motor').addEventListener('click', () => showTwin('motor'));
+        document.getElementById('comp-battery').addEventListener('click', () => showTwin('battery'));
+        document.getElementById('comp-inverter').addEventListener('click', () => showTwin('inverter'));
+        document.getElementById('comp-charger').addEventListener('click', () => showTwin('charger'));
+    }
+
+    function showTwin(key) {
+        const d = twinComponents[key];
+        document.getElementById('twinTitle').textContent = d.name;
+        document.getElementById('twinDesc').textContent = d.desc;
+        document.getElementById('twinSOC').textContent = d.soc ? `${Math.round(currentSOC)}%` : '—';
+        document.getElementById('twinTemp').textContent = `${d.temp}°C`;
+        document.getElementById('twinEff').textContent = `${d.eff}%`;
+        document.getElementById('twinLoss').textContent = `${d.loss}%`;
+    }
+
+    /* ===================== BATTERY THEVENIN MODEL ===================== */
+    document.getElementById('bCurrent').addEventListener('input', e => {
+        const i = parseFloat(e.target.value);
+        document.getElementById('bCurrentVal').textContent = `${i} A`;
+    });
+    document.getElementById('bCycles').addEventListener('input', e => {
+        const c = parseFloat(e.target.value);
+        document.getElementById('bCyclesVal').textContent = `${c}`;
+        battery.cycles = c;
+        updateBatteryDegradation();
+    });
+
+    let voltageChart, sohChart, cellTempChart, impedanceChart;
+    const voltageHistory = { time: [], voc: [], vt: [] };
+
+    function initBatteryCharts() {
+        voltageChart = new ApexCharts(document.querySelector("#chartVoltage"), {
+            series: [
+                { name: 'V_oc (en circuito abierto)', data: [] },
+                { name: 'V_terminal', data: [] }
+            ],
+            chart: { type: 'line', height: 280, ...chartTheme, toolbar: { show: false }, animations: { enabled: false } },
+            xaxis: { title: { text: 'tiempo (s)', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+            yaxis: { title: { text: 'V/celda', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } }, min: 3.0, max: 4.2 },
+            grid: { borderColor: palette.line },
+            colors: [palette.gold, palette.guinda],
+            stroke: { width: 2.5, curve: 'smooth' },
+            dataLabels: { enabled: false },
+            legend: { labels: { colors: '#b89aa3' } },
+            tooltip: { theme: 'dark' }
+        });
+        voltageChart.render();
+
+        // SOH vs cycles
+        const cyclesX = [0, 200, 400, 600, 800, 1000, 1200, 1500, 2000];
+        const sohY = cyclesX.map(c => +(100 - 0.0022 * c - 0.0000007 * c * c).toFixed(2));
+        sohChart = new ApexCharts(document.querySelector("#chartSOH"), {
+            series: [{ name: 'SOH', data: sohY }],
+            chart: { type: 'area', height: 280, ...chartTheme, toolbar: { show: false } },
+            xaxis: { categories: cyclesX, title: { text: 'ciclos', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+            yaxis: { title: { text: '%', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } }, min: 70, max: 100 },
+            grid: { borderColor: palette.line },
+            colors: [palette.mint],
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
+            stroke: { width: 2.5, curve: 'smooth' },
+            dataLabels: { enabled: false },
+            tooltip: { theme: 'dark' },
+            annotations: { xaxis: [] }
+        });
+        sohChart.render();
+
+        // Cell temperature distribution across 8 modules
+        cellTempChart = new ApexCharts(document.querySelector("#chartCellTemp"), {
+            series: [{ name: 'Temperatura', data: [27, 28, 29, 28, 30, 31, 29, 28] }],
+            chart: { type: 'bar', height: 280, ...chartTheme, toolbar: { show: false } },
+            xaxis: { categories: ['M1','M2','M3','M4','M5','M6','M7','M8'], title: { text: 'módulo', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+            yaxis: { title: { text: '°C', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } }, min: 20, max: 45 },
+            grid: { borderColor: palette.line },
+            colors: [palette.ember],
+            plotOptions: { bar: { borderRadius: 5, columnWidth: '55%' } },
+            dataLabels: { enabled: false },
+            tooltip: { theme: 'dark' }
+        });
+        cellTempChart.render();
+
+        // R0 impedance growth vs cycles
+        const r0Y = cyclesX.map(c => +(35 + 0.018 * c).toFixed(1));
+        impedanceChart = new ApexCharts(document.querySelector("#chartImpedance"), {
+            series: [{ name: 'R0', data: r0Y }],
+            chart: { type: 'line', height: 280, ...chartTheme, toolbar: { show: false } },
+            xaxis: { categories: cyclesX, title: { text: 'ciclos', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+            yaxis: { title: { text: 'mΩ', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+            grid: { borderColor: palette.line },
+            colors: [palette.guinda],
+            stroke: { width: 2.5, curve: 'smooth' },
+            markers: { size: 4 },
+            dataLabels: { enabled: false },
+            tooltip: { theme: 'dark' }
+        });
+        impedanceChart.render();
+    }
+
+    function updateBatteryDegradation() {
+        const c = battery.cycles;
+        battery.soh = Math.max(70, +(100 - 0.0022 * c - 0.0000007 * c * c).toFixed(2));
+        battery.r0 = +((35 + 0.018 * c) / 1000).toFixed(5); // back to ohms
+        battery.capacityAh = +(battery.nominalAh * (battery.soh / 100)).toFixed(1);
+
+        document.getElementById('bSOH').textContent = `${battery.soh.toFixed(1)}%`;
+        document.getElementById('bR0').textContent = `${(battery.r0 * 1000).toFixed(0)} mΩ`;
+        document.getElementById('bCapEff').textContent = `${battery.capacityAh.toFixed(1)} Ah`;
+
+        if (sohChart) {
+            sohChart.updateOptions({
+                annotations: {
+                    xaxis: [{
+                        x: c,
+                        borderColor: palette.gold,
+                        label: { text: `${c} ciclos`, style: { color: '#1a060c', background: palette.gold } }
+                    }]
+                }
+            });
+        }
+        if (impedanceChart) {
+            impedanceChart.updateOptions({
+                annotations: {
+                    xaxis: [{
+                        x: c,
+                        borderColor: palette.mint,
+                        label: { text: `R0 actual`, style: { color: '#1a060c', background: palette.mint } }
+                    }]
+                }
+            });
+        }
+    }
+
+    function resetBattery() {
+        battery.soc = 82;
+        battery.v1 = 0;
+        battery.v2 = 0;
+        voltageHistory.time = [];
+        voltageHistory.voc = [];
+        voltageHistory.vt = [];
+
+        const voc = battery.vocCurve(battery.soc);
+        document.getElementById('bSOC').textContent = `${battery.soc.toFixed(1)}%`;
+        document.getElementById('bVoc').textContent = `${voc.toFixed(2)} V/celda`;
+        document.getElementById('bVt').textContent = `${voc.toFixed(2)} V/celda`;
+        document.getElementById('bSOP').textContent = `0 kW`;
+        document.getElementById('bSOE').textContent = `${((battery.soc / 100) * BATTERY_KWH).toFixed(1)} kWh`;
+
+        if (voltageChart) {
+            voltageChart.updateSeries([{ name: 'V_oc (en circuito abierto)', data: [] }, { name: 'V_terminal', data: [] }]);
+            voltageChart.updateOptions({ xaxis: { categories: [] } });
+        }
+        updateBatteryDegradation();
+    }
+
+    // Simulates applying a constant current for 60s using 1-second steps of the 2RC Thevenin model
+    function runBatterySim() {
+        const I = parseFloat(document.getElementById('bCurrent').value); // A, negative = discharge
+        const dt = 1; // s
+        const steps = 60;
+        const capacityAs = battery.capacityAh * 3600; // A·s
+
+        for (let t = 1; t <= steps; t++) {
+            // SOC integration (Coulomb counting): discharge current (negative I) reduces SOC
+            battery.soc += (I * dt) / capacityAs * 100;
+            battery.soc = Math.max(0, Math.min(100, battery.soc));
+
+            // RC branch dynamics
+            battery.v1 += dt * (I / battery.c1 - battery.v1 / (battery.r1 * battery.c1));
+            battery.v2 += dt * (I / battery.c2 - battery.v2 / (battery.r2 * battery.c2));
+
+            const voc = battery.vocCurve(battery.soc);
+            const vt = voc - I * battery.r0 - battery.v1 - battery.v2;
+
+            voltageHistory.time.push(voltageHistory.time.length + 1);
+            voltageHistory.voc.push(+voc.toFixed(3));
+            voltageHistory.vt.push(+vt.toFixed(3));
+        }
+
+        const voc = battery.vocCurve(battery.soc);
+        const vt = voc - I * battery.r0 - battery.v1 - battery.v2;
+
+        // SOP: max power available given voltage limits (simplified, 2.8-4.2V window) over R0
+        const vMin = 2.8, vMax = 4.2;
+        const maxDischargeCurrent = (voc - vMin) / battery.r0;
+        const maxChargeCurrent = (vMax - voc) / battery.r0;
+        const sopDischarge = (voc * maxDischargeCurrent * CELLS_SERIES) / 1000;
+        const sopCharge = (voc * maxChargeCurrent * CELLS_SERIES) / 1000;
+        const sop = I < 0 ? -sopDischarge : sopCharge;
+
+        // SOE: state of energy
+        const soe = (battery.soc / 100) * BATTERY_KWH * (battery.soh / 100);
+
+        currentSOC = battery.soc;
+
+        document.getElementById('bSOC').textContent = `${battery.soc.toFixed(1)}%`;
+        document.getElementById('bVoc').textContent = `${voc.toFixed(2)} V/celda`;
+        document.getElementById('bVt').textContent = `${vt.toFixed(2)} V/celda`;
+        document.getElementById('bSOP').textContent = `${sop.toFixed(1)} kW`;
+        document.getElementById('bSOE').textContent = `${soe.toFixed(1)} kWh`;
+        document.getElementById('socBar').style.width = `${battery.soc}%`;
+        document.getElementById('socBar').textContent = `${Math.round(battery.soc)}%`;
+        document.getElementById('socBarLabel').textContent = `${Math.round(battery.soc)}%`;
+
+        voltageChart.updateOptions({ xaxis: { categories: voltageHistory.time } });
+        voltageChart.updateSeries([
+            { name: 'V_oc (en circuito abierto)', data: voltageHistory.voc },
+            { name: 'V_terminal', data: voltageHistory.vt }
+        ]);
+    }
+
+    /* ===================== ENERGY FLOW SIM ===================== */
+    document.getElementById('irradiance').addEventListener('input', e => {
+        document.getElementById('irrVal').textContent = `${e.target.value} W/m²`;
+    });
+    document.getElementById('demand').addEventListener('input', e => {
+        document.getElementById('demandVal').textContent = `${e.target.value} kW`;
+    });
+
+    function simulateRenewable() {
+        const irradiance = parseFloat(document.getElementById('irradiance').value);
+        const demand = parseFloat(document.getElementById('demand').value);
+
+        const solarPower = (irradiance / 1000) * 5.2;
+        const gridImport = Math.max(0, demand - solarPower);
+        const selfConsumption = Math.min(demand, solarPower);
+        const autonomy = demand > 0 ? (selfConsumption / demand * 100).toFixed(1) : '0.0';
+
+        document.getElementById('flowSolar').textContent = `${solarPower.toFixed(1)} kW`;
+        document.getElementById('flowCharger').textContent = `${demand} kW`;
+        document.getElementById('flowBess').textContent = `${Math.round(40 + Math.random() * 40)}%`;
+
+        genDemandChart.updateSeries([
+            { name: 'Generación Solar', data: [0.5, 2.1, solarPower * 0.7, solarPower, solarPower * 0.9, solarPower * 0.6, 3.2, 1.0] },
+            { name: 'Demanda EV', data: [demand * 0.7, demand * 0.76, demand * 0.8, demand * 0.9, demand, demand * 0.96, demand * 0.84, demand * 0.7] }
+        ]);
+
+        Swal.fire({
+            title: 'Simulación Energética',
+            html: `☀️ Generación solar: <b>${solarPower.toFixed(1)} kW</b><br>
+                   🔌 Demanda del vehículo: <b>${demand} kW</b><br>
+                   🟢 Autoconsumo: <b>${selfConsumption.toFixed(1)} kW (${autonomy}%)</b><br>
+                   ⚡ Importación de red: <b>${gridImport.toFixed(1)} kW</b><br>
+                   🌍 CO₂ evitado: <b>${(selfConsumption * 0.4).toFixed(2)} kg/h</b>`,
+            background: '#2b0a14',
+            color: '#f7e9ec',
+            confirmButtonColor: '#c2185b'
+        });
+    }
+
+    /* ===================== POWER QUALITY ===================== */
+    let harmonicsChart, waveformChart, chargerEffChart, semiconductorChart;
+
+    document.getElementById('dutyCycle').addEventListener('input', e => {
+        document.getElementById('dutyVal').textContent = `${e.target.value}%`;
+    });
+
+    function initQualityCharts() {
+        chargerEffChart = new ApexCharts(document.querySelector("#chartChargerEff"), {
+            series: [{ name: 'Eficiencia', data: [88, 92, 94.5, 96, 96.5, 96.2, 95.5] }],
+            chart: { type: 'line', height: 280, ...chartTheme, toolbar: { show: false } },
+            xaxis: { categories: ['10%','25%','40%','60%','80%','100%','110%'], title: { text: '% de potencia nominal', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+            yaxis: { title: { text: '%', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } }, min: 80, max: 100 },
+            grid: { borderColor: palette.line },
+            colors: [palette.mint],
+            stroke: { width: 2.5, curve: 'smooth' },
+            markers: { size: 4 },
+            dataLabels: { enabled: false },
+            tooltip: { theme: 'dark' }
+        });
+        chargerEffChart.render();
+
+        semiconductorChart = new ApexCharts(document.querySelector("#chartSemiconductor"), {
+            series: [{ name: 'Pérdidas relativas (%)', data: [100, 62, 38, 28] }],
+            chart: { type: 'bar', height: 280, ...chartTheme, toolbar: { show: false } },
+            xaxis: { categories: ['MOSFET Si', 'IGBT', 'SiC', 'GaN'], labels: { style: { colors: '#b89aa3' } } },
+            yaxis: { title: { text: '% relativo a MOSFET Si', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+            grid: { borderColor: palette.line },
+            colors: [palette.ember, palette.gold, palette.mint, palette.guinda],
+            plotOptions: { bar: { borderRadius: 6, distributed: true, columnWidth: '50%' } },
+            legend: { show: false },
+            dataLabels: { enabled: true },
+            tooltip: { theme: 'dark' }
+        });
+        semiconductorChart.render();
+    }
+
+    function updateQuality() {
+        const strategy = document.getElementById('pwmStrategy').value;
+        const duty = parseFloat(document.getElementById('dutyCycle').value);
+        const mode = document.getElementById('chargeMode').value;
+
+        // THD depends on modulation strategy and duty cycle
+        const thdBase = { spwm: 3.2, svpwm: 2.1, pwm: 6.5 };
+        const thd = +(thdBase[strategy] + Math.abs(duty - 50) * 0.04).toFixed(1);
+        const tdd = +(thd * 0.76).toFixed(1);
+        const fp = +(0.995 - thd * 0.004).toFixed(3);
+        const freq = +(60 + (Math.random() - 0.5) * 0.04).toFixed(2);
+        const unbal = +(0.8 + Math.abs(duty - 50) * 0.01).toFixed(1);
+        const vrms = +(220 + (Math.random() - 0.5) * 2).toFixed(1);
+        const irms = +((duty / 100) * 42).toFixed(1);
+
+        document.getElementById('qThd').textContent = `${thd}%`;
+        document.getElementById('qTdd').textContent = `${tdd}%`;
+        document.getElementById('qFp').textContent = fp.toFixed(2);
+        document.getElementById('qFreq').textContent = `${freq.toFixed(2)} Hz`;
+        document.getElementById('qUnbal').textContent = `${unbal}%`;
+        document.getElementById('qVrms').textContent = `${vrms} V`;
+        document.getElementById('qIrms').textContent = `${irms} A`;
+
+        const modeNames = { '1': 'Modo 1 — AC básico', '2': 'Modo 2 — AC protegido', '3': 'Modo 3 — AC EVSE / OCPP', '4': 'Modo 4 — DC rápido / ISO 15118' };
+        document.getElementById('qProtocol').textContent = mode === '4' ? 'ISO 15118 / CCS' : 'OCPP 1.6 / ' + modeNames[mode].split('—')[1].trim();
+
+        const modTag = { spwm: 'SPWM', svpwm: 'SVPWM', pwm: 'PWM' };
+        document.getElementById('qModTag').textContent = modTag[strategy];
+
+        // Harmonic spectrum (odd harmonics decreasing, worse for plain PWM)
+        const harmonicOrders = ['3','5','7','9','11','13'];
+        const decay = { spwm: 0.55, svpwm: 0.4, pwm: 0.7 };
+        const harmonics = harmonicOrders.map((h, i) => +(thd * Math.pow(decay[strategy], i) * 1.6).toFixed(2));
+
+        if (harmonicsChart) {
+            harmonicsChart.updateSeries([{ data: harmonics }]);
+        } else {
+            harmonicsChart = new ApexCharts(document.querySelector("#chartHarmonics"), {
+                series: [{ name: '% del fundamental', data: harmonics }],
+                chart: { type: 'bar', height: 280, ...chartTheme, toolbar: { show: false } },
+                xaxis: { categories: harmonicOrders.map(h => `H${h}`), labels: { style: { colors: '#b89aa3' } } },
+                yaxis: { title: { text: '%', style: { color: '#b89aa3' } }, labels: { style: { colors: '#b89aa3' } } },
+                grid: { borderColor: palette.line },
+                colors: [palette.gold],
+                plotOptions: { bar: { borderRadius: 5, columnWidth: '50%' } },
+                dataLabels: { enabled: true },
+                tooltip: { theme: 'dark' }
+            });
+            harmonicsChart.render();
+        }
+
+        // Waveform: sine reference vs PWM-modulated approximation
+        const points = 100;
+        const sine = [], modulated = [];
+        for (let i = 0; i < points; i++) {
+            const angle = (i / points) * 2 * Math.PI * 2; // 2 cycles
+            const ref = Math.sin(angle);
+            sine.push(+ref.toFixed(3));
+            let mod;
+            if (strategy === 'svpwm') {
+                mod = ref + 0.06 * Math.sin(3 * angle); // third harmonic injection look
+            } else if (strategy === 'pwm') {
+                mod = Math.sign(Math.sin(angle)) * (0.7 + 0.3 * Math.abs(Math.sin(angle * 6)));
+            } else {
+                mod = ref * (duty / 75);
+            }
+            modulated.push(+mod.toFixed(3));
+        }
+
+        if (waveformChart) {
+            waveformChart.updateSeries([
+                { name: 'Referencia senoidal', data: sine },
+                { name: 'Señal modulada', data: modulated }
+            ]);
+        } else {
+            waveformChart = new ApexCharts(document.querySelector("#chartWaveform"), {
+                series: [
+                    { name: 'Referencia senoidal', data: sine },
+                    { name: 'Señal modulada', data: modulated }
+                ],
+                chart: { type: 'line', height: 280, ...chartTheme, toolbar: { show: false }, animations: { enabled: false } },
+                xaxis: { labels: { show: false }, axisTicks: { show: false } },
+                yaxis: { labels: { style: { colors: '#b89aa3' } }, min: -1.5, max: 1.5 },
+                grid: { borderColor: palette.line },
+                colors: [palette.text || '#f7e9ec', palette.guinda],
+                stroke: { width: [1.5, 2.5], curve: 'smooth', dashArray: [4, 0] },
+                dataLabels: { enabled: false },
+                legend: { labels: { colors: '#b89aa3' } },
+                tooltip: { enabled: false }
+            });
+            waveformChart.render();
+        }
+    }
+
+    /* ===================== MAP ===================== */
+    function initMap() {
+        map = L.map('map').setView([19.4326, -99.1332], 11);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+            subdomains: 'abcd'
+        }).addTo(map);
+    }
+
+    function renderStations() {
+        stationMarkers.forEach(m => map.removeLayer(m));
+        stationMarkers = [];
+
+        const filter = document.getElementById('connectorFilter').value;
+        const filtered = filter === 'all' ? stations : stations.filter(s => s.connector === filter);
+
+        filtered.forEach(s => {
+            const color = s.available ? '#6fd8b8' : '#ff7a45';
+            const marker = L.marker([s.lat, s.lng], {
+                icon: L.divIcon({
+                    className: '',
+                    html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #1a060c;box-shadow:0 0 8px ${color};"></div>`,
+                    iconSize: [14, 14]
+                })
+            }).addTo(map).bindPopup(`
+                <div style="font-family:Manrope,sans-serif; color:#1a060c;">
+                    <b>${s.name}</b><br>
+                    ⚡ ${s.power} kW &nbsp;|&nbsp; 🔌 ${s.connector}<br>
+                    💰 $${s.price.toFixed(2)}/kWh<br>
+                    ${s.available ? '🟢 Disponible' : '🔴 Ocupada'} · ${s.slots} slots
+                </div>
+            `);
+            stationMarkers.push(marker);
         });
 
-        // Inicializar el mapa al cargar la página
-        window.onload = initMap;
-    </script>
+        document.getElementById('stationList').innerHTML = filtered.map(s => `
+            <div class="station-row ${s.available ? '' : 'busy'}">
+                <div>
+                    <div class="s-name">${s.name}</div>
+                    <div class="s-meta">${s.connector} · ${s.power} kW · $${s.price.toFixed(2)}/kWh</div>
+                </div>
+                <div class="s-meta">${s.available ? `✅ ${s.slots} libres` : '⛔ ocupada'}</div>
+            </div>
+        `).join('');
+    }
+
+    function findNearest() {
+        if (!("geolocation" in navigator)) {
+            Swal.fire({ title: 'Geolocalización no disponible', icon: 'error', background: '#2b0a14', color: '#f7e9ec' });
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(pos => {
+            const { latitude, longitude } = pos.coords;
+            let nearest = null, minDist = Infinity;
+            stations.forEach(s => {
+                const d = Math.hypot(s.lat - latitude, s.lng - longitude);
+                if (d < minDist) { minDist = d; nearest = s; }
+            });
+            if (nearest) {
+                map.setView([nearest.lat, nearest.lng], 14);
+                Swal.fire({
+                    title: 'Estación más cercana',
+                    html: `<b>${nearest.name}</b><br>Distancia aprox: ${(minDist * 111).toFixed(1)} km<br>Potencia: ${nearest.power} kW`,
+                    background: '#2b0a14', color: '#f7e9ec', confirmButtonColor: '#c2185b'
+                });
+            }
+        }, () => {
+            Swal.fire({ title: 'No se pudo obtener tu ubicación', icon: 'warning', background: '#2b0a14', color: '#f7e9ec' });
+        });
+    }
+
+    /* ===================== ROUTE SIMULATOR ===================== */
+    const simInputs = ['ambientTemp', 'slope', 'passengers', 'acPower', 'speed'];
+    const simLabels = { ambientTemp: 'tempVal', slope: 'slopeVal', passengers: 'passVal', acPower: 'acVal', speed: 'speedVal' };
+    const simUnits = { ambientTemp: '°C', slope: '%', passengers: '', acPower: ' kW', speed: ' km/h' };
+
+    simInputs.forEach(id => {
+        document.getElementById(id).addEventListener('input', e => {
+            document.getElementById(simLabels[id]).textContent = `${e.target.value}${simUnits[id]}`;
+        });
+    });
+
+    function updateSimulation() {
+        const temp = parseFloat(document.getElementById('ambientTemp').value);
+        const slope = parseFloat(document.getElementById('slope').value);
+        const passengers = parseFloat(document.getElementById('passengers').value);
+        const ac = parseFloat(document.getElementById('acPower').value);
+        const speed = parseFloat(document.getElementById('speed').value);
+
+        const base = 165;
+        const tempFactor = Math.abs(temp - 20) * 1.5;
+        const slopeFactor = slope * 8;
+        const massFactor = (passengers - 1) * 2.5;
+        const acFactor = ac * 15;
+        const speedFactor = speed > 90 ? (speed - 90) * 1.2 : speed < 50 ? (50 - speed) * 0.8 : 0;
+
+        const total = base + tempFactor + slopeFactor + massFactor + acFactor + speedFactor;
+        const range = (currentSOC / 100) * BATTERY_KWH * 1000 / total;
+        const chargeTime = (BATTERY_KWH * (1 - currentSOC / 100)) / 7;
+        const eff = Math.max(80, 94 - tempFactor / 10);
+
+        document.getElementById('simConsumption').textContent = `${Math.round(total)} Wh/km`;
+        document.getElementById('simRange').textContent = `${Math.round(range)} km`;
+        document.getElementById('simChargeTime').textContent = `${chargeTime.toFixed(1)} h`;
+        document.getElementById('simEfficiency').textContent = `${eff.toFixed(1)}%`;
+
+        speedChart.updateSeries([{
+            data: [
+                Math.round(base + (speed < 50 ? (50 - 30) * 0.8 : 0) + tempFactor + slopeFactor + massFactor + acFactor),
+                Math.round(base + tempFactor + slopeFactor + massFactor + acFactor),
+                Math.round(base + tempFactor + slopeFactor + massFactor + acFactor + (70 > 90 ? 0 : 0)),
+                Math.round(total),
+                Math.round(base + tempFactor + slopeFactor + massFactor + acFactor + 20 * 1.2),
+                Math.round(base + tempFactor + slopeFactor + massFactor + acFactor + 40 * 1.2),
+                Math.round(base + tempFactor + slopeFactor + massFactor + acFactor + 60 * 1.2),
+                Math.round(base + tempFactor + slopeFactor + massFactor + acFactor + 80 * 1.2)
+            ]
+        }]);
+
+        document.getElementById('sideRange').textContent = `${Math.round(range)} km`;
+    }
+
+    /* ===================== REALTIME ===================== */
+    function simulateRealtime() {
+        currentSOC = Math.max(0, currentSOC - 0.15);
+        const consumption = (BATTERY_KWH * (1 - currentSOC / 100));
+
+        document.getElementById('kpiSOC').textContent = `${Math.round(currentSOC)}%`;
+        document.getElementById('kpiEnergy').textContent = `${consumption.toFixed(1)} kWh`;
+        document.getElementById('kpiCost').textContent = `$${(consumption * 0.15).toFixed(2)}`;
+        document.getElementById('kpiCO2').textContent = `${(consumption * 0.4).toFixed(0)} kg`;
+
+        document.getElementById('socBar').style.width = `${currentSOC}%`;
+        document.getElementById('socBar').textContent = `${Math.round(currentSOC)}%`;
+        document.getElementById('socBarLabel').textContent = `${Math.round(currentSOC)}%`;
+
+        const range = Math.round((currentSOC / 100) * 412);
+        document.getElementById('sideRange').textContent = `${range} km`;
+
+        document.getElementById('mEff').textContent = `${(94 + Math.random() * 1.5).toFixed(1)}%`;
+        document.getElementById('mSpecific').textContent = `${Math.round(160 + Math.random() * 15)} Wh/km`;
+    }
+</script>
 </body>
 </html>
